@@ -115,7 +115,7 @@
                     <div class="relative flex items-center">
                         <i class="fa-solid fa-magnifying-glass absolute left-3.5 text-dsGold text-base"></i>
                         <input type="text" id="searchInput" onkeyup="handleSearchKey(event)" oninput="onSearchInput()" onfocus="onSearchInput()"
-                               placeholder="พิมพ์ชื่อแหวน หรือสถานที่... (เช่น Life Ring, Hornet, Pontiff, Anor Londo)" 
+                               placeholder="พิมพ์ชื่อแหวน... (เช่น Life Ring, Havel, Hornet)"
                                class="w-full bg-dsDarkBg border-2 border-dsGold/60 rounded-lg pl-11 pr-24 py-3 text-sm text-white focus:outline-none focus:border-dsGold focus:ring-2 focus:ring-dsGold/30 transition placeholder-gray-500 shadow-inner">
                         
                         <button id="clearSearchBtn" onclick="clearSearch()" class="hidden absolute right-3.5 text-gray-400 hover:text-dsGold text-xs p-1 bg-dsCardBg rounded border border-dsBorder">
@@ -479,12 +479,7 @@
         function getMatchingItems(query) {
             if (!query) return [];
             const q = query.toLowerCase();
-            return ALL_ITEMS.filter(item => {
-                const nameMatch = item.name.toLowerCase().includes(q);
-                const locMatch = item.location ? item.location.toLowerCase().includes(q) : false;
-                const effectMatch = item.effect ? item.effect.toLowerCase().includes(q) : false;
-                return nameMatch || locMatch || effectMatch;
-            });
+            return ALL_ITEMS.filter(item => item.name.toLowerCase().includes(q));
         }
 
         function renderSuggestions(query) {
@@ -597,10 +592,7 @@
 
                 if (state.searchQuery) {
                     const q = state.searchQuery.toLowerCase();
-                    const nameMatch = item.name.toLowerCase().includes(q);
-                    const locMatch = item.location ? item.location.toLowerCase().includes(q) : false;
-                    const effectMatch = item.effect ? item.effect.toLowerCase().includes(q) : false;
-                    return nameMatch || locMatch || effectMatch;
+                    return item.name.toLowerCase().includes(q);
                 }
 
                 return true;
