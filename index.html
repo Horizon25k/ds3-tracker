@@ -1,0 +1,988 @@
+<!DOCTYPE html>
+<html lang="th" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dark Souls 3 - Interactive Trophy & Achievement Tracker</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Cinzel & Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800;900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        dsGold: '#d4af37',
+                        dsGoldHover: '#f3cf55',
+                        dsDarkBg: '#090a0f',
+                        dsCardBg: '#141722',
+                        dsCardHover: '#1c202e',
+                        dsBorder: '#2b3042',
+                        dsCrimson: '#e63946',
+                        dsEmerald: '#10b981'
+                    },
+                    fontFamily: {
+                        cinzel: ['Cinzel', 'serif'],
+                        sans: ['Inter', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Custom Scrollbar for DS3 Aesthetic */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #090a0f;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #2b3042;
+            border-radius: 4px;
+            border: 1px solid #d4af37;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #d4af37;
+        }
+        
+        .gold-glow {
+            box-shadow: 0 0 15px rgba(212, 175, 55, 0.25);
+        }
+        
+        /* Flash Highlight Effect on Search Jump */
+        @keyframes flashGlowAnimation {
+            0% {
+                background-color: rgba(212, 175, 55, 0.35);
+                border-color: #d4af37;
+                box-shadow: 0 0 30px rgba(212, 175, 55, 0.8);
+                transform: scale(1.015);
+            }
+            50% {
+                background-color: rgba(212, 175, 55, 0.2);
+                border-color: #f3cf55;
+                box-shadow: 0 0 18px rgba(212, 175, 55, 0.5);
+            }
+            100% {
+                background-color: auto;
+                transform: scale(1);
+            }
+        }
+        
+        .flash-highlight {
+            animation: flashGlowAnimation 2.2s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+            scroll-margin-top: 140px;
+        }
+
+        /* Highlight matching search keywords inside text */
+        mark.search-highlight {
+            background-color: rgba(212, 175, 55, 0.35);
+            color: #ffffff;
+            font-weight: 700;
+            padding: 0 2px;
+            border-radius: 2px;
+            border-bottom: 2px solid #d4af37;
+        }
+
+        /* Touch Friendly Checkbox */
+        .custom-checkbox {
+            width: 1.6rem;
+            height: 1.6rem;
+            accent-color: #d4af37;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body class="bg-dsDarkBg text-gray-200 font-sans min-h-screen flex flex-col antialiased selection:bg-dsGold selection:text-black">
+
+    <!-- HEADER / HERO -->
+    <header class="border-b border-dsBorder bg-gradient-to-b from-[#11131c] to-dsDarkBg sticky top-0 z-40 shadow-2xl backdrop-blur-md bg-opacity-95">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5">
+            <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+                
+                <!-- Title & Badge -->
+                <div class="flex items-center gap-3">
+                    <div class="w-11 h-11 rounded-lg bg-dsCardBg border border-dsGold/60 flex items-center justify-center gold-glow shrink-0">
+                        <i class="fa-solid fa-trophy text-dsGold text-xl"></i>
+                    </div>
+                    <div>
+                        <h1 class="font-cinzel text-lg sm:text-xl font-bold tracking-wider text-dsGold drop-shadow-md">
+                            DARK SOULS III
+                        </h1>
+                        <p class="text-xs text-gray-400 font-medium">
+                            Master of Expression (33 Gestures) & Master of Rings (107 Rings)
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Utilities (Export/Import/Reset) -->
+                <div class="flex items-center gap-2 flex-wrap sm:flex-nowrap">
+                    <button onclick="exportData()" class="px-3 py-1.5 text-xs font-semibold rounded-md bg-dsCardBg hover:bg-dsBorder border border-dsBorder text-gray-300 hover:text-dsGold transition flex items-center gap-1.5 touch-manipulation active:scale-95">
+                        <i class="fa-solid fa-download text-dsGold"></i> Export Backup
+                    </button>
+                    <label class="px-3 py-1.5 text-xs font-semibold rounded-md bg-dsCardBg hover:bg-dsBorder border border-dsBorder text-gray-300 hover:text-dsGold transition flex items-center gap-1.5 cursor-pointer touch-manipulation active:scale-95">
+                        <i class="fa-solid fa-upload text-dsGold"></i> Import JSON
+                        <input type="file" id="importFileInput" accept=".json" class="hidden" onchange="importData(event)">
+                    </label>
+                    <button onclick="openResetModal()" class="px-3 py-1.5 text-xs font-semibold rounded-md bg-dsCrimson/20 hover:bg-dsCrimson/30 border border-dsCrimson/40 text-red-300 transition flex items-center gap-1.5 touch-manipulation active:scale-95">
+                        <i class="fa-solid fa-rotate-right"></i> Reset
+                    </button>
+                </div>
+
+            </div>
+
+            <!-- STATS DASHBOARD -->
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-3 pt-3 border-t border-dsBorder/60">
+                <!-- Combined Progress -->
+                <div class="bg-dsCardBg/90 p-2.5 rounded-lg border border-dsBorder flex flex-col justify-between shadow">
+                    <div class="flex justify-between items-center mb-1">
+                        <span class="text-[11px] uppercase font-semibold text-gray-400 font-cinzel">ความคืบหน้ารวมทั้งหมด</span>
+                        <span id="totalStatsText" class="text-xs font-bold text-dsGold">0 / 140 (0%)</span>
+                    </div>
+                    <div class="w-full bg-gray-900 rounded-full h-2 overflow-hidden border border-gray-700/60">
+                        <div id="totalProgressBar" class="bg-gradient-to-r from-amber-600 to-dsGold h-full transition-all duration-300" style="width: 0%"></div>
+                    </div>
+                </div>
+
+                <!-- Gestures Progress -->
+                <div class="bg-dsCardBg/90 p-2.5 rounded-lg border border-dsBorder flex flex-col justify-between shadow">
+                    <div class="flex justify-between items-center mb-1">
+                        <span class="text-[11px] uppercase font-semibold text-gray-400 font-cinzel"><i class="fa-solid fa-person-rays text-dsGold mr-1"></i> Gestures (33)</span>
+                        <span id="gesturesStatsText" class="text-xs font-bold text-dsGold">0 / 33 (0%)</span>
+                    </div>
+                    <div class="w-full bg-gray-900 rounded-full h-2 overflow-hidden border border-gray-700/60">
+                        <div id="gesturesProgressBar" class="bg-dsGold h-full transition-all duration-300" style="width: 0%"></div>
+                    </div>
+                </div>
+
+                <!-- Rings Progress -->
+                <div class="bg-dsCardBg/90 p-2.5 rounded-lg border border-dsBorder flex flex-col justify-between shadow">
+                    <div class="flex justify-between items-center mb-1">
+                        <span class="text-[11px] uppercase font-semibold text-gray-400 font-cinzel"><i class="fa-solid fa-ring text-dsGold mr-1"></i> Rings (107)</span>
+                        <span id="ringsStatsText" class="text-xs font-bold text-dsGold">0 / 107 (0%)</span>
+                    </div>
+                    <div class="w-full bg-gray-900 rounded-full h-2 overflow-hidden border border-gray-700/60">
+                        <div id="ringsProgressBar" class="bg-amber-500 h-full transition-all duration-300" style="width: 0%"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- MAIN CONTENT CONTAINER -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5 flex-1 w-full">
+
+        <!-- PROMINENT SEARCH BAR & FILTERS SECTION -->
+        <div class="bg-dsCardBg border border-dsGold/40 rounded-xl p-4 mb-6 shadow-xl relative gold-glow">
+            
+            <div class="flex flex-col gap-3">
+                <!-- Live Search Bar Header -->
+                <div class="flex items-center justify-between">
+                    <label for="searchInput" class="text-xs font-cinzel font-bold text-dsGold tracking-wider uppercase flex items-center gap-2">
+                        <i class="fa-solid fa-bolt text-amber-400"></i> ระบบค้นหาโดดเด่นและกระโดดข้าม (Live Search & Jump)
+                    </label>
+                    <span class="text-[11px] text-gray-400 hidden sm:inline"><kbd class="px-1.5 py-0.5 text-[10px] bg-dsDarkBg border border-dsBorder rounded text-dsGold">Ctrl</kbd> + <kbd class="px-1.5 py-0.5 text-[10px] bg-dsDarkBg border border-dsBorder rounded text-dsGold">F</kbd> เพื่อค้นหา</span>
+                </div>
+
+                <!-- Search Input Container with Dropdown Suggestions -->
+                <div class="relative w-full">
+                    <div class="relative flex items-center">
+                        <i class="fa-solid fa-magnifying-glass absolute left-3.5 text-dsGold text-base"></i>
+                        <input type="text" id="searchInput" onkeyup="handleSearchKey(event)" oninput="onSearchInput()" onfocus="onSearchInput()"
+                               placeholder="พิมพ์ชื่อท่าทาง, แหวน, NPC หรือสถานที่... (เช่น Sirris, Pale Shade, Life Ring, Pontiff)" 
+                               class="w-full bg-dsDarkBg border-2 border-dsGold/60 rounded-lg pl-11 pr-24 py-3 text-sm text-white focus:outline-none focus:border-dsGold focus:ring-2 focus:ring-dsGold/30 transition placeholder-gray-500 shadow-inner">
+                        
+                        <button id="clearSearchBtn" onclick="clearSearch()" class="hidden absolute right-3.5 text-gray-400 hover:text-dsGold text-xs p-1 bg-dsCardBg rounded border border-dsBorder">
+                            <i class="fa-solid fa-xmark mr-1"></i>ล้าง
+                        </button>
+                    </div>
+
+                    <!-- Search Suggestions Dropdown List -->
+                    <div id="searchSuggestions" class="hidden absolute left-0 right-0 top-full mt-1.5 bg-dsCardBg border-2 border-dsGold rounded-lg shadow-2xl z-50 max-h-80 overflow-y-auto divide-y divide-dsBorder">
+                        <!-- Dynamic Suggestions List -->
+                    </div>
+                </div>
+
+                <!-- CATEGORY & STATUS FILTERS -->
+                <div class="grid grid-cols-1 md:grid-cols-12 gap-3 items-center pt-2 border-t border-dsBorder/80">
+                    
+                    <!-- Category Tabs (All / Gestures / Rings) -->
+                    <div class="md:col-span-6 flex items-center gap-1.5 overflow-x-auto pb-1 md:pb-0">
+                        <button id="catAllBtn" onclick="switchCategory('all')" class="px-3 py-1.5 rounded-lg font-cinzel font-bold text-xs tracking-wide transition border whitespace-nowrap active:scale-95 touch-manipulation bg-dsGold text-black border-dsGold shadow">
+                            ทั้งหมด (140)
+                        </button>
+                        <button id="catGesturesBtn" onclick="switchCategory('gestures')" class="px-3 py-1.5 rounded-lg font-cinzel font-bold text-xs tracking-wide transition border whitespace-nowrap active:scale-95 touch-manipulation bg-dsDarkBg text-gray-400 border-dsBorder hover:border-dsGold/50">
+                            Gestures (33)
+                        </button>
+                        <button id="catRingsBtn" onclick="switchCategory('rings')" class="px-3 py-1.5 rounded-lg font-cinzel font-bold text-xs tracking-wide transition border whitespace-nowrap active:scale-95 touch-manipulation bg-dsDarkBg text-gray-400 border-dsBorder hover:border-dsGold/50">
+                            Rings (107)
+                        </button>
+                    </div>
+
+                    <!-- Status Filters (All / Obtained / Remaining) & NG Filter -->
+                    <div class="md:col-span-6 flex flex-wrap items-center justify-between md:justify-end gap-2">
+                        <!-- Status Filter -->
+                        <div class="flex items-center bg-dsDarkBg p-1 rounded-lg border border-dsBorder">
+                            <button onclick="setStatusFilter('all')" id="filterAllBtn" class="px-2.5 py-1 text-xs font-semibold rounded-md transition text-black bg-dsGold">ทั้งหมด</button>
+                            <button onclick="setStatusFilter('obtained')" id="filterObtainedBtn" class="px-2.5 py-1 text-xs font-semibold rounded-md transition text-gray-400 hover:text-white">เก็บแล้ว</button>
+                            <button onclick="setStatusFilter('remaining')" id="filterRemainingBtn" class="px-2.5 py-1 text-xs font-semibold rounded-md transition text-gray-400 hover:text-white">ยังไม่ได้</button>
+                        </div>
+
+                        <!-- NG Tier Filter (For Rings) -->
+                        <div id="ngFilterGroup" class="flex items-center bg-dsDarkBg p-1 rounded-lg border border-dsBorder">
+                            <button onclick="setNgFilter('all')" id="ngFilterAllBtn" class="px-2 py-1 text-xs font-semibold rounded-md transition text-black bg-dsGold">ทุก NG</button>
+                            <button onclick="setNgFilter('NG')" id="ngFilterNGBtn" class="px-2 py-1 text-xs font-semibold rounded-md transition text-gray-400 hover:text-white">NG</button>
+                            <button onclick="setNgFilter('NG+')" id="ngFilterNGPlusBtn" class="px-2 py-1 text-xs font-semibold rounded-md transition text-gray-400 hover:text-white">NG+</button>
+                            <button onclick="setNgFilter('NG++')" id="ngFilterNGPlus2Btn" class="px-2 py-1 text-xs font-semibold rounded-md transition text-gray-400 hover:text-white">NG++</button>
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+        </div>
+
+        <!-- LIST CONTAINER -->
+        <div id="listContainer" class="space-y-3">
+            <!-- Dynamic Content Cards Inserted Here -->
+        </div>
+
+        <!-- EMPTY STATE -->
+        <div id="emptyState" class="hidden text-center py-16 bg-dsCardBg border border-dsBorder rounded-xl shadow-lg">
+            <i class="fa-solid fa-ghost text-4xl text-dsGold/50 mb-3"></i>
+            <h3 class="font-cinzel text-lg font-bold text-gray-300">ไม่พบรายการที่ตรงตามเงื่อนไข</h3>
+            <p class="text-xs text-gray-500 mt-1">ลองเปลี่ยนคำค้นหา หรือคลิกล้างตัวกรอง</p>
+            <button onclick="resetAllFilters()" class="mt-4 px-4 py-2 text-xs font-bold rounded-lg bg-dsGold text-black hover:bg-dsGoldHover transition">
+                ล้างคำค้นหาและตัวกรองทั้งหมด
+            </button>
+        </div>
+
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="border-t border-dsBorder bg-dsDarkBg py-6 mt-12 text-center text-xs text-gray-500">
+        <div class="max-w-7xl mx-auto px-4">
+            <p class="font-cinzel text-dsGold/80 tracking-widest font-bold">DARK SOULS III TROPHY TRACKER</p>
+            <p class="mt-1">รองรับการใช้งานอย่างสมบูรณ์แบบบน PC, iPad และ Android | บันทึกข้อมูลอัตโนมัติ (localStorage)</p>
+        </div>
+    </footer>
+
+    <!-- CONFIRM RESET MODAL -->
+    <div id="resetModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-dsCardBg border border-dsCrimson/50 rounded-xl p-6 max-w-md w-full shadow-2xl">
+            <div class="flex items-center gap-3 text-red-400 mb-4">
+                <i class="fa-solid fa-triangle-exclamation text-2xl"></i>
+                <h3 class="font-cinzel font-bold text-lg">ยืนยันการล้างข้อมูล?</h3>
+            </div>
+            <p class="text-sm text-gray-300 mb-6 leading-relaxed">
+                การดำเนินการนี้จะรีเซ็ตสถานะการติ๊กถูกของท่าทาง (Gestures 33) และแหวน (Rings 107) ทั้งหมดกลับเป็นค่าเริ่มต้น
+            </p>
+            <div class="flex justify-end gap-3">
+                <button onclick="closeResetModal()" class="px-4 py-2 rounded-lg text-xs font-semibold bg-dsDarkBg border border-dsBorder text-gray-300 hover:text-white">
+                    ยกเลิก
+                </button>
+                <button onclick="confirmReset()" class="px-4 py-2 rounded-lg text-xs font-semibold bg-dsCrimson text-white hover:bg-red-600 transition">
+                    ยืนยันล้างข้อมูล
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- APPLICATION CODE -->
+    <script>
+        // DATASETS: 33 GESTURES & 107 RINGS
+        const GESTURES_DATA = [
+            { id: 'g1', cat: 'gestures', name: 'Point Forward', nameTh: 'ชี้ไปข้างหน้า', source: 'เริ่มต้น', location: 'ได้ตั้งแต่เริ่มเกม', warning: null, type: 'default' },
+            { id: 'g2', cat: 'gestures', name: 'Point Up', nameTh: 'ชี้ขึ้นบน', source: 'เริ่มต้น', location: 'ได้ตั้งแต่เริ่มเกม', warning: null, type: 'default' },
+            { id: 'g3', cat: 'gestures', name: 'Point Down', nameTh: 'ชี้ลงล่าง', source: 'เริ่มต้น', location: 'ได้ตั้งแต่เริ่มเกม (ใช้เปิดม็อด Honest Merchant ที่ศพหอคอย)', warning: null, type: 'default' },
+            { id: 'g4', cat: 'gestures', name: 'Wave', nameTh: 'โบกมือ', source: 'เริ่มต้น', location: 'ได้ตั้งแต่เริ่มเกม', warning: null, type: 'default' },
+            { id: 'g5', cat: 'gestures', name: 'Jump for Joy', nameTh: 'กระโดดดีใจ', source: 'เริ่มต้น', location: 'ได้ตั้งแต่เริ่มเกม', warning: null, type: 'default' },
+            { id: 'g6', cat: 'gestures', name: 'Joy', nameTh: 'ชูมือดีใจ', source: 'เริ่มต้น', location: 'ได้ตั้งแต่เริ่มเกม', warning: null, type: 'default' },
+            { id: 'g7', cat: 'gestures', name: 'Rest', nameTh: 'นั่งพัก', source: 'เริ่มต้น', location: 'ได้ตั้งแต่เริ่มเกม (นั่งบอนไฟร์แรก)', warning: null, type: 'default' },
+            { id: 'g8', cat: 'gestures', name: 'Beckon', nameTh: 'กวักมือเรียก', source: 'Yoel of Londor', location: 'Undead Settlement (สะพานพัง)', warning: 'รับเขากลับมาที่ Firelink Shrine แล้วกดคุย', type: 'npc' },
+            { id: 'g9', cat: 'gestures', name: 'Call Over', nameTh: 'ตะโกนเรียก', source: 'Pickle Pee (รังนก)', location: 'หลังคา Firelink Shrine', warning: 'นำไอเทม เช่น Homeward Bone / Prism Stone ไปทิ้งลงพื้นตรงรังนก แล้วกดเก็บของตอบแทน', type: 'trade' },
+            { id: 'g10', cat: 'gestures', name: 'Welcome', nameTh: 'อ้าแขนยินดี', source: 'Cornyx of the Great Swamp', location: 'Undead Settlement', warning: 'ช่วยเขาออกจากกรง แล้วกลับมาคุยที่ Firelink Shrine', type: 'npc' },
+            { id: 'g11', cat: 'gestures', name: 'Applaud', nameTh: 'ปรบมือ', source: 'Ringfinger Leonhard', location: 'Firelink Shrine (พิงบัลลังก์)', warning: 'ต้องมี Pale Tongue 1 อัน คุยรับกุญแจ Lift Chamber Key -> ตี Darkwraith เอา Red Eye Orb มาโชว์เขาถึงจะได้ท่า', type: 'quest' },
+            { id: 'g12', cat: 'gestures', name: 'Quiet Resolve', nameTh: 'นิ้วแตะอกมุ่งมั่น', source: 'Anri of Astora', location: 'Church of Yorshka (Irithyll)', warning: 'คุยกับ Anri ข้างบอนไฟร์ (ห้ามตีรูปปั้นมุมห้องหากทำเควสต์ Usurpation)', type: 'quest' },
+            { id: 'g13', cat: 'gestures', name: 'Rejoice', nameTh: 'ยกแก้วฉลอง', source: 'Siegward of Catarina', location: 'บ่อน้ำ Cathedral of the Deep', warning: 'ซื้อชุดเกราะ Katarina จาก Patches แล้วโยนลงบ่อน้ำให้ Siegward', type: 'quest' },
+            { id: 'g14', cat: 'gestures', name: 'Hurrah!', nameTh: 'ไชโย', source: 'Blacksmith Andre', location: 'Firelink Shrine', warning: 'คุยกับช่างตีดาบ Andre ครั้งแรก', type: 'npc' },
+            { id: 'g15', cat: 'gestures', name: 'Praise the Sun', nameTh: 'สรรเสริญพระอาทิตย์', source: 'Altar of Sunlight', location: 'Lothric Castle', warning: 'สวดมนต์ที่แท่นบูชาพระอาทิตย์ ในห้องลับก่อนถึงบอส Dragonslayer Armour', type: 'location' },
+            { id: 'g16', cat: 'gestures', name: 'My Thanks!', nameTh: 'คำนับขอบคุณ', source: 'Knight Slayer Tsorig', location: 'Catacombs / Demon Ruins', warning: 'โดนเขาบุกรุก (Invasion) หรือไปสังหารร่างจริงใน Demon Ruins (Smouldering Lake)', type: 'npc' },
+            { id: 'g17', cat: 'gestures', name: 'Proper Bow', nameTh: 'โค้งอย่างสุภาพ', source: 'Yellowfinger Heysel', location: 'Farron Keep (บึงพิษ)', warning: '⚠️ พลาดง่ายสุด: ต้องถวาย 1 Pale Tongue ให้ Rosaria ก่อนปราบ Abyss Watchers แล้วกดเรียก Heysel ที่บึงพิษ (เควสต์ Sirris จะล้มเหลวทันที)', type: 'missable' },
+            { id: 'g18', cat: 'gestures', name: 'Dignified Bow', nameTh: 'โค้งสง่างาม', source: 'Yuria of Londor', location: 'Firelink Shrine', warning: 'คุยกับ Yuria หลังดึงพลัง Dark Sigil ครบ 5 อันจาก Yoel', type: 'quest' },
+            { id: 'g19', cat: 'gestures', name: 'Duel Bow', nameTh: 'โค้งประลอง', source: 'Londor Pale Shade', location: 'Abyss Watchers / Pontiff / Soul of Cinder', warning: 'ต้องมี Dark Sigil 5 อัน + Yuria อยู่ที่ศาลเจ้า แล้วกดเรียก Summon (ร่าง Ember) หน้าห้องบอส', type: 'summon' },
+            { id: 'g20', cat: 'gestures', name: 'Legion Etiquette', nameTh: 'คำนับแห่งกองกำลัง', source: 'Old Wolf of Farron', location: 'Farron Keep (หอคอยหมาป่า)', warning: 'สวดมนต์ที่แท่นรูปปั้นหมาป่าในหอคอยเหนือหนองน้ำ', type: 'covenant' },
+            { id: 'g21', cat: 'gestures', name: 'Darkmoon Loyalty', nameTh: 'ปณิธานพระจันทร์มืด', source: 'Sirris of the Sunless Realms', location: 'Firelink Shrine', warning: '⚠️ พลาดง่าย: คุยกับเธอหลังจากเอา Dreamchaser\'s Ashes ให้ป้าขายของ (ห้ามถวายลิ้นให้ Rosaria เด็ดขาด!)', type: 'missable' },
+            { id: 'g22', cat: 'gestures', name: 'By My Sword', nameTh: 'ด้วยคมดาบของข้า', source: 'Black Hand Gotthard', location: 'Abyss Watchers / Pontiff Sulyvahn', warning: 'กดเรียก Summon ป้าย Gotthard หน้าห้องบอส Abyss Watchers หรือ Pontiff', type: 'summon' },
+            { id: 'g23', cat: 'gestures', name: 'Silent Ally', nameTh: 'พันธมิตรเงียบเชียบ', source: 'Orbeck of Vinheim', location: 'Firelink Shrine', warning: 'ส่ง Scroll แล้วกดซื้อ 4 คาถาเฉพาะ (Aural Decoy, Farron Flashsword, Pestilent Mist, Spook) แล้วกดคุยกับเขา', type: 'quest' },
+            { id: 'g24', cat: 'gestures', name: 'Collapse', nameTh: 'ซบหน้าหมดแรง', source: 'Hawkwood', location: 'Firelink Shrine', warning: 'คุยกับอัศวินซึมที่นั่งตรงบันไดศาลเจ้า', type: 'npc' },
+            { id: 'g25', cat: 'gestures', name: 'Patches Squat', nameTh: 'นั่งยองๆ', source: 'Unbreakable Patches', location: 'Firelink Shrine', warning: 'หลังเคลียร์เรื่องโดนขัง วาร์ปกลับมาคุยกับ Patches ตอนที่เขานั่งยองๆ ขายของ', type: 'npc' },
+            { id: 'g26', cat: 'gestures', name: 'Prostration', nameTh: 'กราบหมอบ', source: 'Unbreakable Patches', location: 'Firelink Shrine', warning: 'โดน Patches ขังบนหอคอย แล้ววาร์ปกลับมาคุย ตอบคำถามว่า "ไม่ให้อภัย" (Do not forgive)', type: 'npc' },
+            { id: 'g27', cat: 'gestures', name: 'Toast', nameTh: 'ชนแก้ว', source: 'Siegward of Catarina', location: 'Undead Settlement', warning: 'ช่วย Siegward ปราบปีศาจไฟ (Fire Demon) แล้วกดคุยชนแก้วดื่มเหล้า', type: 'quest' },
+            { id: 'g28', cat: 'gestures', name: 'Sleep', nameTh: 'นอนหลับ', source: 'Siegward of Catarina', location: 'Undead Settlement', warning: 'คุยชนแก้ว Toast เสร็จ ยืนรอ Siegward คุยต่อจนเขาหลับ', type: 'quest' },
+            { id: 'g29', cat: 'gestures', name: 'Curl Up', nameTh: 'นอนขดตัว', source: 'Greirat of the Undead Settlement', location: 'Firelink Shrine', warning: 'ช่วย Greirat จากคุก แล้วนำไอเทม Loretta\'s Bone มาส่งให้เขา', type: 'quest' },
+            { id: 'g30', cat: 'gestures', name: 'Stretch Out', nameTh: 'นอนเหยียดแขนขา', source: 'ศพข้างบอนไฟร์', location: 'Profaned Capital', warning: 'เก็บจากศพที่นอนอยู่ข้างๆ บอนไฟร์ Profaned Capital', type: 'location' },
+            { id: 'g31', cat: 'gestures', name: 'Path of the Dragon', nameTh: 'วิถีแห่งมังกร', source: 'ศพในโถงทางเดิน', location: 'Consumed King\'s Garden', warning: 'เก็บจากศพในห้องโถงหลังปราบบอส Oceiros, the Consumed King', type: 'location' },
+            { id: 'g32', cat: 'gestures', name: 'Prayer', nameTh: 'อธิษฐาน', source: 'Irina of Carim', location: 'Undead Settlement', warning: 'ช่วยเธอออกจากคุกใต้ดิน Undead Settlement แล้วตอบรับการอารักขา', type: 'npc' },
+            { id: 'g33', cat: 'gestures', name: 'Dignified Salute', nameTh: 'ท่ายืนทำความเคารพ', source: 'Default / Story Progress', location: 'ได้ตามเนื้อเรื่องหรือเริ่มต้น', warning: null, type: 'default' }
+        ];
+
+        const RINGS_DATA = [
+            // NG Rings (70)
+            { id: 'r1', cat: 'rings', name: 'Life Ring', tier: 'NG', location: 'เลือกเป็น Burial Gift ตอนสร้างตัว หรือซื้อจากป้าป่า Firelink (1500 โซล หลังส่ง Dreamchaser Ashes)', effect: 'เพิ่ม HP สูงสุด +7%' },
+            { id: 'r2', cat: 'rings', name: 'Sun Princess Ring', tier: 'NG', location: 'ห้องเตียงของ Gwynevere หลังห้องบอส Aldrich (Anor Londo)', effect: 'ฟื้นฟู HP +2 ทุกๆ วินาที' },
+            { id: 'r3', cat: 'rings', name: 'Estus Ring', tier: 'NG', location: 'ใต้หอคอย Firelink Shrine (ต้องใช้ Tower Key)', effect: 'เพิ่มปริมาณฟื้นฟูของขวดยา Estus Flask +20%' },
+            { id: 'r4', cat: 'rings', name: 'Ashen Estus Ring', tier: 'NG', location: 'ศพในถ้ำช่วงเริ่มเกม Untended Graves', effect: 'เพิ่มปริมาณฟื้นฟูของขวดยา Ashen Estus Flask +20%' },
+            { id: 'r5', cat: 'rings', name: 'Chloranthy Ring', tier: 'NG', location: 'Undead Settlement (หอคอยสู้ปีศาจไฟ กระโดดลงชั้นกลาง)', effect: 'ฟื้นฟู Stamina เร็วขึ้น +7/วินาที' },
+            { id: 'r6', cat: 'rings', name: 'Havel\'s Ring', tier: 'NG', location: 'หลอมจาก Soul of Stray Demon (บอสบนสะพาน Farron)', effect: 'เพิ่มน้ำหนักบรรทุกสูงสุด (Equip Load) +15%' },
+            { id: 'r7', cat: 'rings', name: 'Ring of Favor', tier: 'NG', location: 'ฆ่าหมาป่าศัลยแพทย์ 2 ตัวในห้องลับน้ำหลาก Anor Londo', effect: 'เพิ่ม HP +3%, Stamina +8.5%, Equip Load +5%' },
+            { id: 'r8', cat: 'rings', name: 'Prisoner\'s Chain', tier: 'NG', location: 'หลอมจาก Soul of Champion Gundyr (Untended Graves)', effect: 'เพิ่ม VIG/END/VIT +5 แต่รับความเสียหายแรงขึ้น 4%' },
+            { id: 'r9', cat: 'rings', name: 'Ring of Steel Protection', tier: 'NG', location: 'Archdragon Peak (บนระเบียงหินหลังบอส Ancient Wyvern)', effect: 'ลดความเสียหายกายภาพลง +10%' },
+            { id: 'r10', cat: 'rings', name: 'Magic Stoneplate Ring', tier: 'NG', location: 'ดรอปจากอัศวิน Greatsword Knight ใน Consumed King\'s Garden', effect: 'ต้านทานเวทมนตร์ (Magic Damage) +13%' },
+            { id: 'r11', cat: 'rings', name: 'Flame Stoneplate Ring', tier: 'NG', location: 'ศพห้อยใน Undead Settlement (ตรงลานเผาต้นไม้ใหญ่)', effect: 'ต้านทานไฟ (Fire Damage) +13%' },
+            { id: 'r12', cat: 'rings', name: 'Thunder Stoneplate Ring', tier: 'NG', location: 'Archdragon Peak (ศพใกล้น้ำตกหิน)', effect: 'ต้านทานสายฟ้า (Lightning Damage) +13%' },
+            { id: 'r13', cat: 'rings', name: 'Dark Stoneplate Ring', tier: 'NG', location: 'ศพใน Catacombs of Carthus (ทางซอกหิน)', effect: 'ต้านทานความมืด (Dark Damage) +13%' },
+            { id: 'r14', cat: 'rings', name: 'Speckled Stoneplate Ring', tier: 'NG', location: 'Smouldering Lake (ข้างซากกิ้งก่าหินในห้องลาวา)', effect: 'ต้านทานธาตุทั้งหมด (Magic/Fire/Lightning/Dark) +5%' },
+            { id: 'r15', cat: 'rings', name: 'Bloodbite Ring', tier: 'NG', location: 'ดรอปจากหนูยักษ์ในคุกใต้ดิน Irithyll Dungeon', effect: 'ต้านทานสถานะเลือดออก (Bleed Resistance) +90' },
+            { id: 'r16', cat: 'rings', name: 'Poisonbite Ring', tier: 'NG', location: 'Cathedral of the Deep (ข้างศพเพชฌฆาตในบึง)', effect: 'ต้านทานสถานะพิษ (Poison Resistance) +90' },
+            { id: 'r17', cat: 'rings', name: 'Cursebite Ring', tier: 'NG', location: 'Profaned Capital (บึงพิษทาก)', effect: 'ต้านทานสถานะคำสาป (Curse Resistance) +150' },
+            { id: 'r18', cat: 'rings', name: 'Fleshbite Ring', tier: 'NG', location: 'Grand Archives (บนหลังคามีมอนสเตอร์นกกระจอก)', effect: 'ต้านทานสถานะผิดปกติทั้งหมด +40' },
+            { id: 'r19', cat: 'rings', name: 'Knight\'s Ring', tier: 'NG', location: 'Lothric Castle (ในห้องก่อนถึงบอส Dragonslayer)', effect: 'เพิ่มค่า Strength (STR) +5' },
+            { id: 'r20', cat: 'rings', name: 'Hunter\'s Ring', tier: 'NG', location: 'Grand Archives (บนหอคอยหลังคาที่มี 3 อัศวินทองคำ)', effect: 'เพิ่มค่า Dexterity (DEX) +5' },
+            { id: 'r21', cat: 'rings', name: 'Scholar Ring', tier: 'NG', location: 'Grand Archives (ห้องข้างสะพานลิฟต์)', effect: 'เพิ่มค่า Intelligence (INT) +5' },
+            { id: 'r22', cat: 'rings', name: 'Priestess Ring', tier: 'NG', location: 'ซื้อจากป้าขายของใน Untended Graves (5000 โซล)', effect: 'เพิ่มค่า Faith (FTH) +5' },
+            { id: 'r23', cat: 'rings', name: 'Covetous Gold Serpent Ring', tier: 'NG', location: 'Profaned Capital (ในห้องคุกช่วย Siegward)', effect: 'เพิ่มอัตราการดรอปไอเทม (Item Discovery) +50' },
+            { id: 'r24', cat: 'rings', name: 'Covetous Silver Serpent Ring', tier: 'NG', location: 'หลังคา Firelink Shrine (ในกำแพงลับข้างรังนก)', effect: 'เพิ่มโซลที่ได้รับจากการฆ่าศัตรู +10%' },
+            { id: 'r25', cat: 'rings', name: 'Saint\'s Ring', tier: 'NG', location: 'ซื้อจาก Irina of Carim (3000 โซล)', effect: 'เพิ่มช่องใส่ปาฏิหาริย์ (Attunement Slot) +1' },
+            { id: 'r26', cat: 'rings', name: 'Deep Ring', tier: 'NG', location: 'ดรอปจาก Deacons ใน Cathedral of the Deep', effect: 'เพิ่มช่องใส่คาถา (Attunement Slot) +1' },
+            { id: 'r27', cat: 'rings', name: 'Darkmoon Ring', tier: 'NG', location: 'รางวัล Covenant: Blades of the Darkmoon (ถวาย Proof of Concord Kept 10 อัน หรือซื้อจาก Honest Merchant)', effect: 'เพิ่มช่องใส่คาถา (Attunement Slot) +2' },
+            { id: 'r28', cat: 'rings', name: 'Young Dragon Ring', tier: 'NG', location: 'เลือกคลาส Sorcerer เริ่มต้น หรือคุยกับ Orbeck หลังซื้อเวท 3 คาถา', effect: 'เพิ่มความแรงเวทมนตร์ (Sorceries) +12%' },
+            { id: 'r29', cat: 'rings', name: 'Bellowing Dragoncrest Ring', tier: 'NG', location: 'Irithyll Dungeon (ข้ามขอบคุกที่ต้องใช้กุญแจ Jailbreaker Key)', effect: 'เพิ่มความแรงเวทมนตร์ (Sorceries) +20%' },
+            { id: 'r30', cat: 'rings', name: 'Great Swamp Ring', tier: 'NG', location: 'ดรอปจากปูยักษ์ใน Road of Sacrifices หรือเลือกคลาส Pyromancer', effect: 'เพิ่มความแรงเวทมนตร์ไฟ (Pyromancies) +12%' },
+            { id: 'r31', cat: 'rings', name: 'Witch\'s Ring', tier: 'NG', location: 'Catacombs of Carthus (ตรงศพทางลง Smouldering Lake)', effect: 'เพิ่มความแรงเวทมนตร์ไฟ (Pyromancies) +20%' },
+            { id: 'r32', cat: 'rings', name: 'Morne\'s Ring', tier: 'NG', location: 'ใต้สะพานหินก่อนถึงบอนไฟร์ Road of Sacrifices', effect: 'เพิ่มความแรงปาฏิหาริย์ (Miracles) +12%' },
+            { id: 'r33', cat: 'rings', name: 'Ring of the Sun\'s Firstborn', tier: 'NG', location: 'Irithyll of the Boreal Valley (โดดลงจากสะพานหน้าโบสถ์ Yorshka)', effect: 'เพิ่มความแรงปาฏิหาริย์ (Miracles) +20%' },
+            { id: 'r34', cat: 'rings', name: 'Lingering Dragoncrest Ring', tier: 'NG', location: 'ดรอปจากปูยักษ์ใน Farron Keep', effect: 'ยืดระยะเวลาของเวทมนตร์บัฟ +30%' },
+            { id: 'r35', cat: 'rings', name: 'Sage Ring', tier: 'NG', location: 'ซากอาคารบึงน้ำ Road of Sacrifices', effect: 'เพิ่มความเร็วในการร่ายเวท (Cast Speed) +30 Virtual DEX' },
+            { id: 'r36', cat: 'rings', name: 'Dusk Crown Ring', tier: 'NG', location: 'Irithyll Dungeon (ในห้องคุกที่มีขังกลุ่มยักษ์ขุย)', effect: 'ลดการใช้ FP ของเวทมนตร์ 25% แต่ลด HP สูงสุด 15%' },
+            { id: 'r37', cat: 'rings', name: 'Leo Ring', tier: 'NG', location: 'หีบในห้องโถงชั้น 2 เมือง Irithyll (ห้องรูปปั้น Gwynevere)', effect: 'เพิ่มความเสียหายการโจมตีสวน (Counter Damage) ของอาวุธแทง +15%' },
+            { id: 'r38', cat: 'rings', name: 'Wolf Ring', tier: 'NG', location: 'รางวัล Covenant: Watchdogs of Farron (ถวาย Wolf\'s Blood Swordgrass 10 อัน หรือซื้อจาก Honest Merchant)', effect: 'เพิ่มค่า Poise (ความอึดไม่ชะงัก) +12.5' },
+            { id: 'r39', cat: 'rings', name: 'Hawk Ring', tier: 'NG', location: 'ดรอปจากยักษ์ยิงธนูบนหอคอย Undead Settlement (หรือฆ่าเขา)', effect: 'เพิ่มระยะยิงของธนู/หน้าไม้' },
+            { id: 'r40', cat: 'rings', name: 'Ring of Evil Eye', tier: 'NG', location: 'ได้จากเควสต์ Anri of Astora หลังปราบ Aldrich', effect: 'ฟื้นฟู HP +30 ทุกครั้งที่สังหารศัตรู' },
+            { id: 'r41', cat: 'rings', name: 'Farron Ring', tier: 'NG', location: 'คุยกับ Hawkwood ใน Firelink Shrine หลังปราบ Abyss Watchers', effect: 'ลดการใช้ FP ของการกด Skill/Weapon Art -25%' },
+            { id: 'r42', cat: 'rings', name: 'Dragonscale Ring', tier: 'NG', location: 'Consumed King\'s Garden (หีบหลังอัศวินข้างลิฟต์)', effect: 'ลดความเสียหายจากการโดนแทงหลัง (Backstab) -30%' },
+            { id: 'r43', cat: 'rings', name: 'Horsehoof Ring', tier: 'NG', location: 'ซื้อจาก Patches (5000 โซล) หรือฆ่าเขา', effect: 'เพิ่มการทำลาย Stamina จากการเตะ (Kick) +30%' },
+            { id: 'r44', cat: 'rings', name: 'Wood Grain Ring', tier: 'NG', location: 'ซื้อจากป้าขายของ Firelink หลังส่ง Easterner\'s Ashes', effect: 'ลดความเสื่อมสภาพความทนทานอาวุธ -40%' },
+            { id: 'r45', cat: 'rings', name: 'Flynn\'s Ring', tier: 'NG', location: 'Undead Settlement (บนหลังคาอาคารสู้ปีศาจไฟ)', effect: 'เพิ่มพลังโจมตี ยิ่งน้ำหนักตัวเบาพลังโจมตียิ่งสูง' },
+            { id: 'r46', cat: 'rings', name: 'Magic Clutch Ring', tier: 'NG', location: 'กำแพงลับใน Irithyll of the Boreal Valley', effect: 'เพิ่มพลังโจมตีธาตุเวทมนตร์ +15% แต่รับความเสียหายกายภาพแรงขึ้น 10%' },
+            { id: 'r47', cat: 'rings', name: 'Lightning Clutch Ring', tier: 'NG', location: 'Archdragon Peak (ศพใกล้บอนไฟร์แรก)', effect: 'เพิ่มพลังโจมตีธาตุสายฟ้า +15% แต่รับความเสียหายกายภาพแรงขึ้น 10%' },
+            { id: 'r48', cat: 'rings', name: 'Fire Clutch Ring', tier: 'NG', location: 'Undead Settlement (บนระเบียงไม้ห้อยศพ)', effect: 'เพิ่มพลังโจมตีธาตุไฟ +15% แต่รับความเสียหายกายภาพแรงขึ้น 10%' },
+            { id: 'r49', cat: 'rings', name: 'Dark Clutch Ring', tier: 'NG', location: 'ดรอปจากมิมิก (Mimic) ใน Dungeon Irithyll', effect: 'เพิ่มพลังโจมตีธาตุมืด +15% แต่รับความเสียหายกายภาพแรงขึ้น 10%' },
+            { id: 'r50', cat: 'rings', name: 'Red Tearstone Ring', tier: 'NG', location: 'Lothric Castle (บนระเบียงก่อนห้องบอส Dragonslayer Armour)', effect: 'เพิ่มพลังโจมตี +20% เมื่อ HP ต่ำกว่า 20%' },
+            { id: 'r51', cat: 'rings', name: 'Blue Tearstone Ring', tier: 'NG', location: 'ได้จาก Greirat เมื่อช่วยเขาออกจากคุก Undead Settlement', effect: 'เพิ่มพลังป้องกัน +20% เมื่อ HP ต่ำกว่า 20%' },
+            { id: 'r52', cat: 'rings', name: 'Lloyd\'s Sword Ring', tier: 'NG', location: 'Cathedral of the Deep (ศพบนทางเดินยักษ์ตัวแรก)', effect: 'เพิ่มพลังโจมตี +10% เมื่อ HP เต็ม 100%' },
+            { id: 'r53', cat: 'rings', name: 'Lloyd\'s Shield Ring', tier: 'NG', location: 'ซื้อจากป้าขายของ Firelink (2500 โซล หลังส่ง Paladin\'s Ashes)', effect: 'เพิ่มพลังป้องกัน +20% เมื่อ HP เต็ม 100%' },
+            { id: 'r54', cat: 'rings', name: 'Carthus Milkring', tier: 'NG', location: 'Catacombs of Carthus (ในห้องที่มีแจกันกะโหลกเยอะๆ)', effect: 'เพิ่ม DEX +3 และทำให้ร่างล่องหนชั่วขณะตอนกิ้งตัว' },
+            { id: 'r55', cat: 'rings', name: 'Carthus Bloodring', tier: 'NG', location: 'Catacombs of Carthus (ศพใกล้มอนสเตอร์ล้อหนาม)', effect: 'เพิ่มช่วงอมตะตอนกลิ้งตัว แต่ลดพลังป้องกันลง 15%' },
+            { id: 'r56', cat: 'rings', name: 'Pontiff\'s Right Eye', tier: 'NG', location: 'ดรอปจากหมาป่าสะพาน Irithyll of the Boreal Valley', effect: 'เพิ่มพลังโจมตีต่อเนื่องเมื่อโจมตีรัวๆ' },
+            { id: 'r57', cat: 'rings', name: 'Pontiff\'s Left Eye', tier: 'NG', location: 'หลอมจาก Soul of Vordt of the Boreal Valley', effect: 'ฟื้นฟู HP เมื่อโจมตีศัตรูต่อเนื่อง' },
+            { id: 'r58', cat: 'rings', name: 'Aldrich\'s Ruby', tier: 'NG', location: 'ดรอปจากแมงมุมหน้ากากยักษ์ใน Cathedral of the Deep', effect: 'ฟื้นฟู HP +85 เมื่อทำ Critical Hit (แทงหลัง/Parry)' },
+            { id: 'r59', cat: 'rings', name: 'Aldrich\'s Sapphire', tier: 'NG', location: 'ดรอปจากแมงมุมหน้ากากยักษ์ใน Cathedral of the Deep (ห้องโถง)', effect: 'ฟื้นฟู FP +15 เมื่อทำ Critical Hit' },
+            { id: 'r60', cat: 'rings', name: 'Silvercat Ring', tier: 'NG', location: 'รางวัลเควสต์ Sirris of the Sunless Realms (หลังช่วยเธอสู้ที่สะพาน)', effect: 'ป้องกันความเสียหายจากการตกจากที่สูง (ไม่รวมตกเหวตาย)' },
+            { id: 'r61', cat: 'rings', name: 'Slumbering Dragoncrest Ring', tier: 'NG', location: 'ได้จาก Orbeck of Vinheim หลังซื้อเวท Aural Decoy, Spook, etc.', effect: 'ไร้เสียงก้าวเดิน ศัตรูไม่ได้ยินเสียงเคลื่อนไหว' },
+            { id: 'r62', cat: 'rings', name: 'Obscuring Ring', tier: 'NG', location: 'รางวัล Covenant: Rosaria\'s Fingers (ถวาย Pale Tongue 10 อัน หรือซื้อจาก Honest Merchant)', effect: 'ทำให้ผู้เล่นอื่นมองไม่เห็นตัวเราจากระยะไกล' },
+            { id: 'r63', cat: 'rings', name: 'Untrue Dark Ring', tier: 'NG', location: 'ซื้อจาก Yuria of Londor (5000 โซล)', effect: 'ลบออร่าสีตัวละคร ให้ดูเหมือนร่างมนุษย์โฮสต์ปกติ' },
+            { id: 'r64', cat: 'rings', name: 'Untrue White Ring', tier: 'NG', location: 'ซื้อจาก Yuria of Londor (5000 โซล)', effect: 'ทำให้ร่างตัวละครมีออร่าสีขาวเหมือน Phantom ผู้อัญเชิญ' },
+            { id: 'r65', cat: 'rings', name: 'Reversal Ring', tier: 'NG', location: 'ห้องลับหอคอย Anor Londo (ทางเข้าเควสต์การแต่งงาน)', effect: 'เปลี่ยนขบวนท่าทางเคลื่อนไหวเพศชาย-หญิง' },
+            { id: 'r66', cat: 'rings', name: 'Skull Ring', tier: 'NG', location: 'ดรอปจากศพ Ludleth of Courland หลังจุดไฟติดบอสใหญ่', effect: 'ดึงดูดความสนใจศัตรูให้โจมตีเราง่ายขึ้น' },
+            { id: 'r67', cat: 'rings', name: 'Calamity Ring', tier: 'NG', location: 'ใช้ท่า Path of the Dragon สวดมนต์หน้ารูปปั้นมังกรใน Archdragon Peak', effect: 'รับความเสียหายเพิ่มขึ้นเป็น 2 เท่า (ไอเทมท้าทาย)' },
+            { id: 'r68', cat: 'rings', name: 'Ring of Sacrifice', tier: 'NG', location: 'มีขายจากป้าศาลเจ้า / เก็บได้หลายจุดในแผนที่', effect: 'สูญหายแหวนนี้แทนโซลเมื่อตาย (โซลไม่ตก)' },
+            { id: 'r69', cat: 'rings', name: 'Bloodbite Ring +0', tier: 'NG', location: 'ดรอปจากหนูยักษ์คุก Irithyll', effect: 'ต้านทาน Bleed' },
+            { id: 'r70', cat: 'rings', name: 'Poisonbite Ring +0', tier: 'NG', location: 'Cathedral of the Deep', effect: 'ต้านทาน Poison' },
+
+            // NG+ Rings (21)
+            { id: 'r71', cat: 'rings', name: 'Life Ring +1', tier: 'NG+', location: 'NG+: หลังบัลลังก์ Darkmoon Tomb (Anor Londo)', effect: 'HP +8%' },
+            { id: 'r72', cat: 'rings', name: 'Chloranthy Ring +1', tier: 'NG+', location: 'NG+: ด้านหลังรูปปั้น Dania ในเมือง Irithyll', effect: 'Stamina regen +8/s' },
+            { id: 'r73', cat: 'rings', name: 'Havel\'s Ring +1', tier: 'NG+', location: 'NG+: Archdragon Peak (ใกล้ซากมังกร Crag Wyvern)', effect: 'Equip Load +17%' },
+            { id: 'r74', cat: 'rings', name: 'Ring of Favor +1', tier: 'NG+', location: 'NG+: ชั้นบนห้องบอส Pontiff Sulyvahn', effect: 'HP +4.5%, Stamina +9.5%, Equip +5.5%' },
+            { id: 'r75', cat: 'rings', name: 'Ring of Steel Protection +1', tier: 'NG+', location: 'NG+: Untended Graves ด้านหลังหอคอย', effect: 'Physical Def +13%' },
+            { id: 'r76', cat: 'rings', name: 'Magic Stoneplate Ring +1', tier: 'NG+', location: 'NG+: Farron Keep ใกล้สุสานดาบยักษ์', effect: 'Magic Def +17%' },
+            { id: 'r77', cat: 'rings', name: 'Flame Stoneplate Ring +1', tier: 'NG+', location: 'NG+: Catacombs of Carthus ใกล้หลุมใหญ่', effect: 'Fire Def +17%' },
+            { id: 'r78', cat: 'rings', name: 'Thunder Stoneplate Ring +1', tier: 'NG+', location: 'NG+: Catacombs of Carthus ใกล้ห้องแจกัน', effect: 'Lightning Def +17%' },
+            { id: 'r79', cat: 'rings', name: 'Dark Stoneplate Ring +1', tier: 'NG+', location: 'NG+: Lothric Castle ใกล้สะพานมังกร', effect: 'Dark Def +17%' },
+            { id: 'r80', cat: 'rings', name: 'Speckled Stoneplate Ring +1', tier: 'NG+', location: 'NG+: Cemetery of Ash ใกล้มอนสเตอร์ยักษ์', effect: 'All Elemental Def +7%' },
+            { id: 'r81', cat: 'rings', name: 'Bloodbite Ring +1', tier: 'NG+', location: 'NG+: Smouldering Lake ใกล้หน้าไม้ใหญ่ (Ballista)', effect: 'Bleed Res +140' },
+            { id: 'r82', cat: 'rings', name: 'Poisonbite Ring +1', tier: 'NG+', location: 'NG+: Undead Settlement ใกล้บ่อน้ำพิษ', effect: 'Poison Res +140' },
+            { id: 'r83', cat: 'rings', name: 'Cursebite Ring +1', tier: 'NG+', location: 'NG+: Cathedral of the Deep ใกล้หลังคาวิหาร', effect: 'Curse Res +200' },
+            { id: 'r84', cat: 'rings', name: 'Fleshbite Ring +1', tier: 'NG+', location: 'NG+: High Wall of Lothric ใกล้ห้องเก็บกุญแจ', effect: 'All Status Res +60' },
+            { id: 'r85', cat: 'rings', name: 'Covetous Gold Serpent Ring +1', tier: 'NG+', location: 'NG+: Irithyll Dungeon ใกล้ลิฟต์', effect: 'Item Discovery +75' },
+            { id: 'r86', cat: 'rings', name: 'Covetous Silver Serpent Ring +1', tier: 'NG+', location: 'NG+: Irithyll หน้าผาใกล้ลิฟต์', effect: 'Souls +20%' },
+            { id: 'r87', cat: 'rings', name: 'Lingering Dragoncrest Ring +1', tier: 'NG+', location: 'NG+: High Wall of Lothric หลังคา', effect: 'Spell Duration +35%' },
+            { id: 'r88', cat: 'rings', name: 'Sage Ring +1', tier: 'NG+', location: 'NG+: Grand Archives คานหลังคาชั้นบน', effect: 'Cast Speed +35 Virtual DEX' },
+            { id: 'r89', cat: 'rings', name: 'Wolf Ring +1', tier: 'NG+', location: 'NG+: Keep Ruins บอนไฟร์นอกหอคอย', effect: 'Poise +17.5' },
+            { id: 'r90', cat: 'rings', name: 'Wood Grain Ring +1', tier: 'NG+', location: 'NG+: หลังปีศาจไฟ Undead Settlement', effect: 'Durability loss -60%' },
+            { id: 'r91', cat: 'rings', name: 'Ring of Evil Eye +1', tier: 'NG+', location: 'NG+: Cathedral of the Deep แท่นนักบวช', effect: 'Restore HP +33 on kill' },
+
+            // NG++ Rings (16)
+            { id: 'r92', cat: 'rings', name: 'Life Ring +2', tier: 'NG++', location: 'NG++: Lothric Castle ขอบสะพานมังกร', effect: 'HP +9.5%' },
+            { id: 'r93', cat: 'rings', name: 'Life Ring +3', tier: 'NG++', location: 'NG++: Untended Graves หลังบัลลังก์ Champion Gundyr', effect: 'HP +10%' },
+            { id: 'r94', cat: 'rings', name: 'Chloranthy Ring +2', tier: 'NG++', location: 'NG++: Road of Sacrifices ใกล้บอสจอมเวท', effect: 'Stamina regen +9/s' },
+            { id: 'r95', cat: 'rings', name: 'Havel\'s Ring +2', tier: 'NG++', location: 'NG++: Catacombs of Carthus คานชั้นบน', effect: 'Equip Load +18%' },
+            { id: 'r96', cat: 'rings', name: 'Ring of Favor +2', tier: 'NG++', location: 'NG++: Cathedral of the Deep คานหลังคาชั้นสูง', effect: 'HP +5%, Stamina +10%, Equip +6%' },
+            { id: 'r97', cat: 'rings', name: 'Ring of Steel Protection +2', tier: 'NG++', location: 'NG++: Catacombs of Carthus เสาสะพาน', effect: 'Physical Def +15%' },
+            { id: 'r98', cat: 'rings', name: 'Magic Stoneplate Ring +2', tier: 'NG++', location: 'NG++: Profaned Capital บันไดลิง', effect: 'Magic Def +20%' },
+            { id: 'r99', cat: 'rings', name: 'Flame Stoneplate Ring +2', tier: 'NG++', location: 'NG++: Demon Ruins กำแพงลับ', effect: 'Fire Def +20%' },
+            { id: 'r100', cat: 'rings', name: 'Thunder Stoneplate Ring +2', tier: 'NG++', location: 'NG++: Lothric Castle หลังคา', effect: 'Lightning Def +20%' },
+            { id: 'r101', cat: 'rings', name: 'Dark Stoneplate Ring +2', tier: 'NG++', location: 'NG++: Farron Keep มุมบึงด้านหลัง', effect: 'Dark Def +20%' },
+            { id: 'r102', cat: 'rings', name: 'Covetous Gold Serpent Ring +2', tier: 'NG++', location: 'NG++: Archdragon Peak หลังบอส Nameless King', effect: 'Item Discovery +100' },
+            { id: 'r103', cat: 'rings', name: 'Covetous Silver Serpent Ring +2', tier: 'NG++', location: 'NG++: Undead Settlement หลังคา', effect: 'Souls +30%' },
+            { id: 'r104', cat: 'rings', name: 'Lingering Dragoncrest Ring +2', tier: 'NG++', location: 'NG++: Grand Archives ซอกห้อง', effect: 'Spell Duration +40%' },
+            { id: 'r105', cat: 'rings', name: 'Sage Ring +2', tier: 'NG++', location: 'NG++: Consumed King Garden บันไดพัง', effect: 'Cast Speed +40 Virtual DEX' },
+            { id: 'r106', cat: 'rings', name: 'Wolf Ring +2', tier: 'NG++', location: 'NG++: Cemetery of Ash หลังลานบอส Iudex Gundyr', effect: 'Poise +20' },
+            { id: 'r107', cat: 'rings', name: 'Ring of Evil Eye +2', tier: 'NG++', location: 'NG++: High Wall of Lothric ห้องคุก', effect: 'Restore HP +35 on kill' }
+        ];
+
+        // Combine Datasets for unified searching
+        const ALL_ITEMS = [...GESTURES_DATA, ...RINGS_DATA];
+
+        // STATE MANAGEMENT
+        const STORAGE_KEY = 'ds3_trophy_tracker_v2';
+        const USER_ID = 'my_ds3_user';
+
+        let state = {
+            category: 'all',        // 'all' | 'gestures' | 'rings'
+            statusFilter: 'all',    // 'all' | 'obtained' | 'remaining'
+            ngFilter: 'all',        // 'all' | 'NG' | 'NG+' | 'NG++'
+            searchQuery: '',
+            checkedItems: {}        // { 'g1': true, 'r5': true }
+        };
+
+        // INITIALIZATION
+        window.addEventListener('DOMContentLoaded', async () => {
+            await loadStateFromStorage();
+            setupKeyboardShortcuts();
+            renderApp();
+            
+            // Close suggestion dropdown when clicking outside
+            document.addEventListener('click', (e) => {
+                const searchContainer = document.getElementById('searchInput').parentElement;
+                if (!searchContainer.contains(e.target)) {
+                    hideSuggestions();
+                }
+            });
+        });
+
+        // STORAGE & NEON DB INTEGRATION
+        async function loadStateFromStorage() {
+            try {
+                const res = await fetch(`/api/progress/${USER_ID}`);
+                if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                const data = await res.json();
+                
+                if (data.gestures || data.rings) {
+                    const savedArray = [...(data.gestures || []), ...(data.rings || [])];
+                    state.checkedItems = {};
+                    savedArray.forEach(id => { state.checkedItems[id] = true; });
+                }
+            } catch (e) {
+                console.warn('ไม่สามารถดึงข้อมูลจาก Neon DB ได้ ระบบจะดึงจาก LocalStorage แทน', e);
+                try {
+                    const saved = localStorage.getItem(STORAGE_KEY);
+                    if (saved) {
+                        const parsed = JSON.parse(saved);
+                        state.checkedItems = parsed.checkedItems || {};
+                    }
+                } catch (err) {
+                    console.error('Failed to load local storage state', err);
+                }
+            }
+        }
+
+        async function saveStateToStorage() {
+            // Save to LocalStorage immediately for instant UX feedback
+            try {
+                localStorage.setItem(STORAGE_KEY, JSON.stringify({
+                    checkedItems: state.checkedItems
+                }));
+            } catch (e) {
+                console.error('Failed to save to LocalStorage', e);
+            }
+
+            // Extract arrays for backend API payload
+            const gestures = [];
+            const rings = [];
+            Object.keys(state.checkedItems).forEach(id => {
+                if (state.checkedItems[id]) {
+                    if (id.startsWith('g')) gestures.push(id);
+                    if (id.startsWith('r')) rings.push(id);
+                }
+            });
+
+            // Post sync payload to Neon DB backend API
+            try {
+                await fetch(`/api/progress/${USER_ID}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ gestures, rings })
+                });
+            } catch (e) {
+                console.error('Failed to sync with Neon DB', e);
+            }
+        }
+
+        function toggleItem(id) {
+            state.checkedItems[id] = !state.checkedItems[id];
+            saveStateToStorage();
+            renderApp();
+        }
+
+        // KEYBOARD SHORTCUTS
+        function setupKeyboardShortcuts() {
+            document.addEventListener('keydown', (e) => {
+                if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'f') {
+                    e.preventDefault();
+                    const input = document.getElementById('searchInput');
+                    input.focus();
+                    input.select();
+                } else if (e.key === 'Escape') {
+                    hideSuggestions();
+                }
+            });
+        }
+
+        // CATEGORY SWITCHING
+        function switchCategory(cat) {
+            state.category = cat;
+            
+            const catAllBtn = document.getElementById('catAllBtn');
+            const catGesturesBtn = document.getElementById('catGesturesBtn');
+            const catRingsBtn = document.getElementById('catRingsBtn');
+
+            const activeClass = "px-3 py-1.5 rounded-lg font-cinzel font-bold text-xs tracking-wide transition border whitespace-nowrap active:scale-95 touch-manipulation bg-dsGold text-black border-dsGold shadow";
+            const inactiveClass = "px-3 py-1.5 rounded-lg font-cinzel font-bold text-xs tracking-wide transition border whitespace-nowrap active:scale-95 touch-manipulation bg-dsDarkBg text-gray-400 border-dsBorder hover:border-dsGold/50";
+
+            catAllBtn.className = cat === 'all' ? activeClass : inactiveClass;
+            catGesturesBtn.className = cat === 'gestures' ? activeClass : inactiveClass;
+            catRingsBtn.className = cat === 'rings' ? activeClass : inactiveClass;
+
+            renderApp();
+        }
+
+        // STATUS FILTER
+        function setStatusFilter(filter) {
+            state.statusFilter = filter;
+            ['all', 'obtained', 'remaining'].forEach(f => {
+                const btn = document.getElementById(`filter${f.charAt(0).toUpperCase() + f.slice(1)}Btn`);
+                if (f === filter) {
+                    btn.className = "px-2.5 py-1 text-xs font-semibold rounded-md transition text-black bg-dsGold";
+                } else {
+                    btn.className = "px-2.5 py-1 text-xs font-semibold rounded-md transition text-gray-400 hover:text-white";
+                }
+            });
+            renderApp();
+        }
+
+        // NG FILTER
+        function setNgFilter(ng) {
+            state.ngFilter = ng;
+            const btnMap = {
+                'all': 'ngFilterAllBtn',
+                'NG': 'ngFilterNGBtn',
+                'NG+': 'ngFilterNGPlusBtn',
+                'NG++': 'ngFilterNGPlus2Btn'
+            };
+            Object.keys(btnMap).forEach(key => {
+                const btn = document.getElementById(btnMap[key]);
+                if (key === ng) {
+                    btn.className = "px-2 py-1 text-xs font-semibold rounded-md transition text-black bg-dsGold";
+                } else {
+                    btn.className = "px-2 py-1 text-xs font-semibold rounded-md transition text-gray-400 hover:text-white";
+                }
+            });
+            renderApp();
+        }
+
+        function resetAllFilters() {
+            state.category = 'all';
+            state.statusFilter = 'all';
+            state.ngFilter = 'all';
+            state.searchQuery = '';
+            document.getElementById('searchInput').value = '';
+            switchCategory('all');
+            setStatusFilter('all');
+            setNgFilter('all');
+            hideSuggestions();
+            renderApp();
+        }
+
+        // PROMINENT LIVE SEARCH SYSTEM
+        function onSearchInput() {
+            const input = document.getElementById('searchInput');
+            state.searchQuery = input.value.trim();
+            const clearBtn = document.getElementById('clearSearchBtn');
+
+            if (state.searchQuery) {
+                clearBtn.classList.remove('hidden');
+                renderSuggestions(state.searchQuery);
+            } else {
+                clearBtn.classList.add('hidden');
+                hideSuggestions();
+            }
+
+            renderApp();
+        }
+
+        function handleSearchKey(e) {
+            if (e.key === 'Enter') {
+                const suggestions = getMatchingItems(state.searchQuery);
+                if (suggestions.length > 0) {
+                    jumpToItem(suggestions[0].id);
+                }
+            }
+        }
+
+        function clearSearch() {
+            document.getElementById('searchInput').value = '';
+            state.searchQuery = '';
+            document.getElementById('clearSearchBtn').classList.add('hidden');
+            hideSuggestions();
+            renderApp();
+        }
+
+        function getMatchingItems(query) {
+            if (!query) return [];
+            const q = query.toLowerCase();
+            return ALL_ITEMS.filter(item => {
+                const nameMatch = item.name.toLowerCase().includes(q);
+                const thMatch = item.nameTh ? item.nameTh.toLowerCase().includes(q) : false;
+                const locMatch = item.location ? item.location.toLowerCase().includes(q) : false;
+                const srcMatch = item.source ? item.source.toLowerCase().includes(q) : false;
+                const warnMatch = item.warning ? item.warning.toLowerCase().includes(q) : false;
+                const effectMatch = item.effect ? item.effect.toLowerCase().includes(q) : false;
+                return nameMatch || thMatch || locMatch || srcMatch || warnMatch || effectMatch;
+            });
+        }
+
+        function renderSuggestions(query) {
+            const matches = getMatchingItems(query);
+            const container = document.getElementById('searchSuggestions');
+            
+            if (matches.length === 0) {
+                container.innerHTML = `
+                    <div class="p-3 text-xs text-gray-400 text-center">
+                        <i class="fa-solid fa-circle-question text-dsGold mr-1"></i>ไม่พบผลการค้นหาตรงกับ "${escapeHtml(query)}"
+                    </div>`;
+                container.classList.remove('hidden');
+                return;
+            }
+
+            // Top 8 suggestions
+            const topMatches = matches.slice(0, 8);
+            container.innerHTML = topMatches.map(item => {
+                const isChecked = !!state.checkedItems[item.id];
+                const badge = item.cat === 'gestures' 
+                    ? '<span class="px-1.5 py-0.5 text-[9px] bg-amber-900/60 text-amber-300 rounded font-bold border border-amber-600/40">GESTURE</span>' 
+                    : `<span class="px-1.5 py-0.5 text-[9px] bg-blue-900/60 text-blue-300 rounded font-bold border border-blue-600/40">${item.tier || 'RING'}</span>`;
+
+                return `
+                    <div onclick="jumpToItem('${item.id}')" 
+                         class="p-2.5 hover:bg-dsCardHover transition cursor-pointer flex items-center justify-between gap-3 group">
+                        <div class="flex items-center gap-2.5 overflow-hidden">
+                            <span class="text-xs ${isChecked ? 'text-dsEmerald' : 'text-gray-500'}">
+                                ${isChecked ? '<i class="fa-solid fa-circle-check"></i>' : '<i class="fa-regular fa-circle"></i>'}
+                            </span>
+                            <div class="truncate">
+                                <div class="text-xs font-bold text-dsGold group-hover:text-dsGoldHover flex items-center gap-1.5 truncate">
+                                    ${badge} ${highlightText(item.name, query)} ${item.nameTh ? `<span class="text-gray-400 font-normal">(${item.nameTh})</span>` : ''}
+                                </div>
+                                <div class="text-[11px] text-gray-400 truncate">
+                                    <i class="fa-solid fa-location-dot text-[10px] text-dsGold/70 mr-1"></i>${highlightText(item.location, query)}
+                                </div>
+                            </div>
+                        </div>
+                        <span class="text-[10px] text-dsGold border border-dsGold/40 px-2 py-0.5 rounded group-hover:bg-dsGold group-hover:text-black font-bold shrink-0">
+                            กระโดดข้าม <i class="fa-solid fa-arrow-right ml-0.5"></i>
+                        </span>
+                    </div>
+                `;
+            }).join('');
+
+            if (matches.length > 8) {
+                container.innerHTML += `
+                    <div class="p-2 bg-dsDarkBg text-[11px] text-dsGold text-center font-semibold">
+                        ...และยังมีผลลัพธ์อื่นๆ อีก ${matches.length - 8} รายการอยู่ด้านล่าง
+                    </div>`;
+            }
+
+            container.classList.remove('hidden');
+        }
+
+        function hideSuggestions() {
+            document.getElementById('searchSuggestions').classList.add('hidden');
+        }
+
+        // JUMP TO ITEM & FLASH HIGHLIGHT
+        function jumpToItem(id) {
+            hideSuggestions();
+
+            // Ensure item is visible under filters
+            const item = ALL_ITEMS.find(i => i.id === id);
+            if (item) {
+                // Switch category if needed
+                if (state.category !== 'all' && state.category !== item.cat) {
+                    switchCategory('all');
+                }
+                // Switch status filter if hidden
+                const isChecked = !!state.checkedItems[id];
+                if ((state.statusFilter === 'obtained' && !isChecked) || (state.statusFilter === 'remaining' && isChecked)) {
+                    setStatusFilter('all');
+                }
+                // Switch NG filter if hidden
+                if (item.cat === 'rings' && state.ngFilter !== 'all' && item.tier !== state.ngFilter) {
+                    setNgFilter('all');
+                }
+            }
+
+            renderApp();
+
+            // Timeout to allow DOM rendering before scroll
+            setTimeout(() => {
+                const element = document.getElementById(`card-${id}`);
+                if (element) {
+                    element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    element.classList.remove('flash-highlight');
+                    void element.offsetWidth; // Force reflow
+                    element.classList.add('flash-highlight');
+                }
+            }, 100);
+        }
+
+        // HIGHLIGHT KEYWORD HTML HELPER
+        function highlightText(text, query) {
+            if (!text) return '';
+            if (!query) return escapeHtml(text);
+            const escapedQuery = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+            const regex = new RegExp(`(${escapedQuery})`, 'gi');
+            return escapeHtml(text).replace(regex, '<mark class="search-highlight">$1</mark>');
+        }
+
+        function escapeHtml(str) {
+            return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+        }
+
+        // RENDER METHOD
+        function renderApp() {
+            updateStats();
+
+            const container = document.getElementById('listContainer');
+            const emptyState = document.getElementById('emptyState');
+            container.innerHTML = '';
+
+            // Filter items
+            const filtered = ALL_ITEMS.filter(item => {
+                // Category Filter
+                if (state.category !== 'all' && item.cat !== state.category) return false;
+
+                // Status Filter
+                const isChecked = !!state.checkedItems[item.id];
+                if (state.statusFilter === 'obtained' && !isChecked) return false;
+                if (state.statusFilter === 'remaining' && isChecked) return false;
+
+                // NG Filter (For Rings)
+                if (item.cat === 'rings' && state.ngFilter !== 'all' && item.tier !== state.ngFilter) return false;
+
+                // Search Filter
+                if (state.searchQuery) {
+                    const q = state.searchQuery.toLowerCase();
+                    const nameMatch = item.name.toLowerCase().includes(q);
+                    const thMatch = item.nameTh ? item.nameTh.toLowerCase().includes(q) : false;
+                    const locMatch = item.location ? item.location.toLowerCase().includes(q) : false;
+                    const srcMatch = item.source ? item.source.toLowerCase().includes(q) : false;
+                    const warnMatch = item.warning ? item.warning.toLowerCase().includes(q) : false;
+                    const effectMatch = item.effect ? item.effect.toLowerCase().includes(q) : false;
+                    return nameMatch || thMatch || locMatch || srcMatch || warnMatch || effectMatch;
+                }
+
+                return true;
+            });
+
+            if (filtered.length === 0) {
+                emptyState.classList.remove('hidden');
+            } else {
+                emptyState.classList.add('hidden');
+                filtered.forEach(item => {
+                    const card = item.cat === 'gestures' ? createGestureCard(item) : createRingCard(item);
+                    container.appendChild(card);
+                });
+            }
+        }
+
+        // STATS UPDATER
+        function updateStats() {
+            let gesturesObtained = 0;
+            GESTURES_DATA.forEach(g => { if (state.checkedItems[g.id]) gesturesObtained++; });
+
+            let ringsObtained = 0;
+            RINGS_DATA.forEach(r => { if (state.checkedItems[r.id]) ringsObtained++; });
+
+            const totalObtained = gesturesObtained + ringsObtained;
+            const totalItems = GESTURES_DATA.length + RINGS_DATA.length;
+
+            const totalPct = Math.round((totalObtained / totalItems) * 100);
+            const gesturesPct = Math.round((gesturesObtained / GESTURES_DATA.length) * 100);
+            const ringsPct = Math.round((ringsObtained / RINGS_DATA.length) * 100);
+
+            document.getElementById('totalStatsText').textContent = `${totalObtained} / ${totalItems} (${totalPct}%)`;
+            document.getElementById('totalProgressBar').style.width = `${totalPct}%`;
+
+            document.getElementById('gesturesStatsText').textContent = `${gesturesObtained} / 33 (${gesturesPct}%)`;
+            document.getElementById('gesturesProgressBar').style.width = `${gesturesPct}%`;
+
+            document.getElementById('ringsStatsText').textContent = `${ringsObtained} / 107 (${ringsPct}%)`;
+            document.getElementById('ringsProgressBar').style.width = `${ringsPct}%`;
+        }
+
+        // CARD GENERATORS
+        function createGestureCard(item) {
+            const isChecked = !!state.checkedItems[item.id];
+            const q = state.searchQuery;
+            const div = document.createElement('div');
+            div.id = `card-${item.id}`;
+            
+            div.className = `p-4 rounded-xl border transition duration-200 flex flex-col md:flex-row md:items-center justify-between gap-3 cursor-pointer touch-manipulation ${
+                isChecked 
+                ? 'bg-dsCardBg/40 border-dsBorder/40 opacity-60' 
+                : 'bg-dsCardBg border-dsBorder hover:border-dsGold/60 hover:bg-dsCardHover'
+            }`;
+
+            div.onclick = (e) => {
+                if (e.target.tagName !== 'INPUT' && e.target.tagName !== 'A') {
+                    toggleItem(item.id);
+                }
+            };
+
+            const isMissable = item.type === 'missable';
+
+            div.innerHTML = `
+                <div class="flex items-start gap-3.5 flex-1">
+                    <input type="checkbox" ${isChecked ? 'checked' : ''} onchange="toggleItem('${item.id}')" 
+                           class="custom-checkbox mt-1 shrink-0">
+                    <div class="space-y-1">
+                        <div class="flex items-center gap-2 flex-wrap">
+                            <span class="px-2 py-0.5 text-[10px] uppercase font-bold rounded bg-amber-950/80 text-amber-300 border border-amber-600/40">GESTURE</span>
+                            <h4 class="font-bold text-base ${isChecked ? 'line-through text-gray-400' : 'text-dsGold'}">${highlightText(item.name, q)}</h4>
+                            <span class="text-xs text-gray-400 font-medium">(${highlightText(item.nameTh, q)})</span>
+                            ${isMissable ? '<span class="px-2 py-0.5 text-[10px] uppercase font-extrabold rounded bg-red-950/80 text-red-300 border border-red-500/50">⚠️ Missable / พลาดง่าย</span>' : ''}
+                        </div>
+                        <p class="text-xs text-gray-300 leading-relaxed">
+                            <span class="text-dsGold/90 font-medium"><i class="fa-solid fa-location-dot mr-1"></i>${highlightText(item.location, q)}</span>
+                            <span class="text-gray-400 font-normal"> — [NPC/เงื่อนไข: ${highlightText(item.source, q)}]</span>
+                        </p>
+                        ${item.warning ? `<div class="mt-1.5 text-xs text-amber-200/90 bg-amber-950/40 p-2 rounded border border-amber-800/40"><i class="fa-solid fa-circle-info mr-1 text-amber-400"></i>${highlightText(item.warning, q)}</div>` : ''}
+                    </div>
+                </div>
+            `;
+            return div;
+        }
+
+        function createRingCard(item) {
+            const isChecked = !!state.checkedItems[item.id];
+            const q = state.searchQuery;
+            const div = document.createElement('div');
+            div.id = `card-${item.id}`;
+            
+            div.className = `p-4 rounded-xl border transition duration-200 flex flex-col md:flex-row md:items-center justify-between gap-3 cursor-pointer touch-manipulation ${
+                isChecked 
+                ? 'bg-dsCardBg/40 border-dsBorder/40 opacity-60' 
+                : 'bg-dsCardBg border-dsBorder hover:border-dsGold/60 hover:bg-dsCardHover'
+            }`;
+
+            div.onclick = (e) => {
+                if (e.target.tagName !== 'INPUT' && e.target.tagName !== 'A') {
+                    toggleItem(item.id);
+                }
+            };
+
+            let badgeColor = 'bg-blue-950/80 text-blue-300 border-blue-600/40';
+            if (item.tier === 'NG+') badgeColor = 'bg-purple-950/80 text-purple-300 border-purple-600/40';
+            if (item.tier === 'NG++') badgeColor = 'bg-amber-950/80 text-amber-300 border-amber-600/40';
+
+            div.innerHTML = `
+                <div class="flex items-start gap-3.5 flex-1">
+                    <input type="checkbox" ${isChecked ? 'checked' : ''} onchange="toggleItem('${item.id}')" 
+                           class="custom-checkbox mt-1 shrink-0">
+                    <div class="space-y-1">
+                        <div class="flex items-center gap-2 flex-wrap">
+                            <span class="px-2 py-0.5 text-[10px] uppercase font-bold rounded border ${badgeColor}">${item.tier}</span>
+                            <h4 class="font-bold text-base ${isChecked ? 'line-through text-gray-400' : 'text-dsGold'}">${highlightText(item.name, q)}</h4>
+                        </div>
+                        <p class="text-xs text-gray-300 leading-relaxed">
+                            <span class="text-dsGold/90 font-medium"><i class="fa-solid fa-map-pin mr-1"></i>${highlightText(item.location, q)}</span>
+                        </p>
+                        <p class="text-xs text-gray-400 italic">
+                            <i class="fa-solid fa-wand-magic-sparkles text-dsGold/70 mr-1"></i>คุณสมบัติ: ${highlightText(item.effect, q)}
+                        </p>
+                    </div>
+                </div>
+            `;
+            return div;
+        }
+
+        // RESET MODAL
+        function openResetModal() {
+            document.getElementById('resetModal').classList.remove('hidden');
+        }
+
+        function closeResetModal() {
+            document.getElementById('resetModal').classList.add('hidden');
+        }
+
+        function confirmReset() {
+            state.checkedItems = {};
+            saveStateToStorage();
+            closeResetModal();
+            renderApp();
+        }
+
+        // EXPORT & IMPORT JSON BACKUP
+        function exportData() {
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(state.checkedItems, null, 2));
+            const downloadAnchor = document.createElement('a');
+            downloadAnchor.setAttribute("href", dataStr);
+            downloadAnchor.setAttribute("download", `DS3_Trophy_Backup_${new Date().toISOString().slice(0,10)}.json`);
+            document.body.appendChild(downloadAnchor);
+            downloadAnchor.click();
+            downloadAnchor.remove();
+        }
+
+        function importData(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const imported = JSON.parse(e.target.result);
+                    if (typeof imported === 'object') {
+                        state.checkedItems = imported;
+                        saveStateToStorage();
+                        renderApp();
+                        alert('นำเข้าข้อมูลสำเร็จแล้ว!');
+                    }
+                } catch (err) {
+                    alert('ไฟล์ JSON ไม่ถูกต้อง กรุณาตรวจสอบไฟล์สำรองของคุณ');
+                }
+            };
+            reader.readAsText(file);
+        }
+    </script>
+</body>
+</html>
