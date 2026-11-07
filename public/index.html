@@ -185,6 +185,7 @@
 
     <script>
         const RINGS_DATA = [
+            // NG Rings (70)
             { id: 'r1', cat: 'rings', name: 'Life Ring', tier: 'NG', location: 'เลือกเป็น Burial Gift ตอนสร้างตัว หรือซื้อจากป้าป่า Firelink (1500 โซล หลังส่ง Dreamchaser Ashes)', effect: 'เพิ่ม HP สูงสุด +7%' },
             { id: 'r2', cat: 'rings', name: 'Sun Princess Ring', tier: 'NG', location: 'ห้องเตียงของ Gwynevere หลังห้องบอส Aldrich (Anor Londo)', effect: 'ฟื้นฟู HP +2 ทุกๆ วินาที' },
             { id: 'r3', cat: 'rings', name: 'Estus Ring', tier: 'NG', location: 'ใต้หอคอย Firelink Shrine (ต้องใช้ Tower Key)', effect: 'เพิ่มปริมาณฟื้นฟูของขวดยา Estus Flask +20%' },
@@ -253,8 +254,8 @@
             { id: 'r66', cat: 'rings', name: 'Skull Ring', tier: 'NG', location: 'ดรอปจากศพ Ludleth of Courland หลังจุดไฟติดบอสใหญ่', effect: 'ดึงดูดความสนใจศัตรูให้โจมตีเราง่ายขึ้น' },
             { id: 'r67', cat: 'rings', name: 'Calamity Ring', tier: 'NG', location: 'ใช้ท่า Path of the Dragon สวดมนต์หน้ารูปปั้นมังกรใน Archdragon Peak', effect: 'รับความเสียหายเพิ่มขึ้นเป็น 2 เท่า (ไอเทมท้าทาย)' },
             { id: 'r68', cat: 'rings', name: 'Ring of Sacrifice', tier: 'NG', location: 'มีขายจากป้าศาลเจ้า / เก็บได้หลายจุดในแผนที่', effect: 'สูญหายแหวนนี้แทนโซลเมื่อตาย (โซลไม่ตก)' },
-            { id: 'r69', cat: 'rings', name: 'Bloodbite Ring +0', tier: 'NG', location: 'ดรอปจากหนูยักษ์คุก Irithyll', effect: 'ต้านทาน Bleed' },
-            { id: 'r70', cat: 'rings', name: 'Poisonbite Ring +0', tier: 'NG', location: 'Cathedral of the Deep', effect: 'ต้านทาน Poison' },
+
+            // NG+ Rings (21)
             { id: 'r71', cat: 'rings', name: 'Life Ring +1', tier: 'NG+', location: 'NG+: หลังบัลลังก์ Darkmoon Tomb (Anor Londo)', effect: 'HP +8%' },
             { id: 'r72', cat: 'rings', name: 'Chloranthy Ring +1', tier: 'NG+', location: 'NG+: ด้านหลังรูปปั้น Dania ในเมือง Irithyll', effect: 'Stamina regen +8/s' },
             { id: 'r73', cat: 'rings', name: 'Havel\'s Ring +1', tier: 'NG+', location: 'NG+: Archdragon Peak (ใกล้ซากมังกร Crag Wyvern)', effect: 'Equip Load +17%' },
@@ -276,6 +277,8 @@
             { id: 'r89', cat: 'rings', name: 'Wolf Ring +1', tier: 'NG+', location: 'NG+: Keep Ruins บอนไฟร์นอกหอคอย', effect: 'Poise +17.5' },
             { id: 'r90', cat: 'rings', name: 'Wood Grain Ring +1', tier: 'NG+', location: 'NG+: หลังปีศาจไฟ Undead Settlement', effect: 'Durability loss -60%' },
             { id: 'r91', cat: 'rings', name: 'Ring of Evil Eye +1', tier: 'NG+', location: 'NG+: Cathedral of the Deep แท่นนักบวช', effect: 'Restore HP +33 on kill' },
+
+            // NG++ Rings (16)
             { id: 'r92', cat: 'rings', name: 'Life Ring +2', tier: 'NG++', location: 'NG++: Lothric Castle ขอบสะพานมังกร', effect: 'HP +9.5%' },
             { id: 'r93', cat: 'rings', name: 'Life Ring +3', tier: 'NG++', location: 'NG++: Untended Graves หลังบัลลังก์ Champion Gundyr', effect: 'HP +10%' },
             { id: 'r94', cat: 'rings', name: 'Chloranthy Ring +2', tier: 'NG++', location: 'NG++: Road of Sacrifices ใกล้บอสจอมเวท', effect: 'Stamina regen +9/s' },
@@ -327,14 +330,23 @@
                 
                 if (data.rings) {
                     state.checkedItems = {};
-                    data.rings.forEach(id => { state.checkedItems[id] = true; });
+                    data.rings.forEach(id => { 
+                        if (id.startsWith('r')) state.checkedItems[id] = true; 
+                    });
                 }
             } catch (e) {
                 try {
                     const saved = localStorage.getItem(STORAGE_KEY);
                     if (saved) {
                         const parsed = JSON.parse(saved);
-                        state.checkedItems = parsed.checkedItems || {};
+                        state.checkedItems = {};
+                        if (parsed.checkedItems) {
+                            Object.keys(parsed.checkedItems).forEach(id => {
+                                if (id.startsWith('r') && parsed.checkedItems[id]) {
+                                    state.checkedItems[id] = true;
+                                }
+                            });
+                        }
                     }
                 } catch (err) {
                     console.error('Failed to load local storage state', err);
@@ -635,7 +647,6 @@
             if (item.tier === 'NG+') badgeColor = 'bg-purple-950/80 text-purple-300 border-purple-600/40';
             if (item.tier === 'NG++') badgeColor = 'bg-amber-950/80 text-amber-300 border-amber-600/40';
 
-            // ปรับขนาดตัวอักษรชื่อแหวนใหญ่ขึ้นตรงนี้ (จาก text-base เป็น text-lg md:text-xl)
             div.innerHTML = `
                 <div class="flex items-start gap-3.5 flex-1">
                     <input type="checkbox" ${isChecked ? 'checked' : ''} onchange="toggleItem('${item.id}')" 
@@ -673,7 +684,14 @@
         }
 
         function exportData() {
-            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(state.checkedItems, null, 2));
+            // กรองเฉพาะแหวน เพื่อส่งออกไฟล์ JSON ที่สะอาดที่สุด
+            const ringsOnlyData = {};
+            Object.keys(state.checkedItems).forEach(id => {
+                if (id.startsWith('r') && state.checkedItems[id]) {
+                    ringsOnlyData[id] = true;
+                }
+            });
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(ringsOnlyData, null, 2));
             const downloadAnchor = document.createElement('a');
             downloadAnchor.setAttribute("href", dataStr);
             downloadAnchor.setAttribute("download", `DS3_Rings_Backup_${new Date().toISOString().slice(0,10)}.json`);
@@ -691,7 +709,12 @@
                 try {
                     const imported = JSON.parse(e.target.result);
                     if (typeof imported === 'object') {
-                        state.checkedItems = imported;
+                        state.checkedItems = {};
+                        Object.keys(imported).forEach(id => {
+                            if (id.startsWith('r') && imported[id]) {
+                                state.checkedItems[id] = true;
+                            }
+                        });
                         saveStateToStorage();
                         renderApp();
                         alert('นำเข้าข้อมูลสำเร็จแล้ว!');
