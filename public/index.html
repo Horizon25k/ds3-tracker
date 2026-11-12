@@ -74,11 +74,26 @@
                 </div>
 
                 <div class="flex items-center gap-2 flex-wrap sm:flex-nowrap">
+                    <!-- โซน Firebase Login -->
+                    <div class="flex items-center gap-2 mr-1 sm:mr-3 border-r border-dsBorder pr-2 sm:pr-4">
+                        <div id="userInfoContainer" class="hidden flex items-center gap-2">
+                            <img id="userAvatar" src="" alt="Avatar" class="w-6 h-6 rounded-full border border-dsGold">
+                            <span id="userInfo" class="text-xs font-semibold text-dsGold hidden sm:inline"></span>
+                        </div>
+                        <button id="loginBtn" class="px-3 py-1.5 text-xs font-semibold rounded-md bg-blue-600/20 hover:bg-blue-600/30 border border-blue-600/40 text-blue-300 transition flex items-center gap-1.5 touch-manipulation active:scale-95">
+                            <i class="fa-brands fa-google"></i> Login
+                        </button>
+                        <button id="logoutBtn" class="hidden px-2 py-1.5 text-xs font-semibold rounded-md bg-dsCardBg hover:bg-dsBorder border border-dsBorder text-gray-400 hover:text-white transition flex items-center gap-1.5 touch-manipulation active:scale-95" title="ออกจากระบบ">
+                            <i class="fa-solid fa-right-from-bracket"></i>
+                        </button>
+                    </div>
+
+                    <!-- เครื่องมือเดิม -->
                     <button onclick="exportData()" class="px-3 py-1.5 text-xs font-semibold rounded-md bg-dsCardBg hover:bg-dsBorder border border-dsBorder text-gray-300 hover:text-dsGold transition flex items-center gap-1.5 touch-manipulation active:scale-95">
-                        <i class="fa-solid fa-download text-dsGold"></i> Export Backup
+                        <i class="fa-solid fa-download text-dsGold"></i> Backup
                     </button>
                     <label class="px-3 py-1.5 text-xs font-semibold rounded-md bg-dsCardBg hover:bg-dsBorder border border-dsBorder text-gray-300 hover:text-dsGold transition flex items-center gap-1.5 cursor-pointer touch-manipulation active:scale-95">
-                        <i class="fa-solid fa-upload text-dsGold"></i> Import JSON
+                        <i class="fa-solid fa-upload text-dsGold"></i> Import
                         <input type="file" id="importFileInput" accept=".json" class="hidden" onchange="importData(event)">
                     </label>
                     <button onclick="openResetModal()" class="px-3 py-1.5 text-xs font-semibold rounded-md bg-dsCrimson/20 hover:bg-dsCrimson/30 border border-dsCrimson/40 text-red-300 transition flex items-center gap-1.5 touch-manipulation active:scale-95">
@@ -159,7 +174,7 @@
     <footer class="border-t border-dsBorder bg-dsDarkBg py-6 mt-12 text-center text-xs text-gray-500">
         <div class="max-w-7xl mx-auto px-4">
             <p class="font-cinzel text-dsGold/80 tracking-widest font-bold">DARK SOULS III TROPHY TRACKER</p>
-            <p class="mt-1">รองรับการใช้งานอย่างสมบูรณ์แบบบน PC, iPad และ Android | บันทึกข้อมูลอัตโนมัติ (localStorage)</p>
+            <p class="mt-1">รองรับการใช้งานอย่างสมบูรณ์แบบบน PC, iPad และ Android | บันทึกข้อมูลอัตโนมัติ</p>
         </div>
     </footer>
 
@@ -183,7 +198,71 @@
         </div>
     </div>
 
-    <script>
+    <script type="module">
+        // 1. นำเข้า Firebase Modules
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-app.js";
+        import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-auth.js";
+
+        // 2. ดึงค่า Firebase Config จาก API ฝั่ง Backend (/api/config)
+        let firebaseConfig = {};
+        try {
+            const configRes = await fetch('/api/config');
+            firebaseConfig = await configRes.json();
+        } catch (err) {
+            console.error("Failed to fetch Firebase config from server:", err);
+        }
+
+        // 3. Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const provider = new GoogleAuthProvider();
+
+        let currentUserUID = null;
+        const STORAGE_KEY = 'ds3_trophy_tracker_v2';
+
+        // 4. จัดการปุ่ม Login / Logout
+        document.getElementById('loginBtn').addEventListener('click', () => {
+            signInWithPopup(auth, provider).catch(error => console.error("Login failed:", error));
+        });
+
+        document.getElementById('logoutBtn').addEventListener('click', () => {
+            signOut(auth).then(() => {
+                currentUserUID = null;
+                state.checkedItems = {}; 
+                loadStateFromStorage();
+            });
+        });
+
+        // 5. ดักจับสถานะ Auth
+        onAuthStateChanged(auth, async (user) => {
+            const loginBtn = document.getElementById('loginBtn');
+            const logoutBtn = document.getElementById('logoutBtn');
+            const userInfoContainer = document.getElementById('userInfoContainer');
+            const userInfo = document.getElementById('userInfo');
+            const userAvatar = document.getElementById('userAvatar');
+
+            if (user) {
+                currentUserUID = user.uid;
+                
+                loginBtn.classList.add('hidden');
+                logoutBtn.classList.remove('hidden');
+                userInfoContainer.classList.remove('hidden');
+                
+                userInfo.textContent = user.displayName.split(' ')[0];
+                userAvatar.src = user.photoURL;
+
+                await loadStateFromStorage();
+            } else {
+                currentUserUID = null;
+                
+                loginBtn.classList.remove('hidden');
+                logoutBtn.classList.add('hidden');
+                userInfoContainer.classList.add('hidden');
+            }
+            renderApp();
+        });
+
+        // Tracker Logic
         const RINGS_DATA = [
             // NG Rings (70)
             { id: 'r1', cat: 'rings', name: 'Life Ring', tier: 'NG', location: 'เลือกเป็น Burial Gift ตอนสร้างตัว หรือซื้อจากป้าขายของ Firelink (1500 โซล หลังส่ง Dreamchaser Ashes)', effect: 'เพิ่ม HP สูงสุด +7%' },
@@ -301,9 +380,6 @@
 
         const ALL_ITEMS = [...RINGS_DATA];
 
-        const STORAGE_KEY = 'ds3_trophy_tracker_v2';
-        const USER_ID = 'my_ds3_user';
-
         let state = {
             statusFilter: 'all',
             ngFilter: 'all',
@@ -312,8 +388,8 @@
         };
 
         window.addEventListener('DOMContentLoaded', async () => {
-            await loadStateFromStorage();
             setupKeyboardShortcuts();
+            await loadStateFromStorage();
             renderApp();
             
             document.addEventListener('click', (e) => {
@@ -325,34 +401,39 @@
         });
 
         async function loadStateFromStorage() {
-            try {
-                const res = await fetch(`/api/progress/${USER_ID}`);
-                if (!res.ok) throw new Error(`HTTP ${res.status}`);
-                const data = await res.json();
-                
-                if (data.rings) {
-                    state.checkedItems = {};
-                    data.rings.forEach(id => { 
-                        if (id.startsWith('r')) state.checkedItems[id] = true; 
-                    });
-                }
-            } catch (e) {
+            if (currentUserUID) {
                 try {
-                    const saved = localStorage.getItem(STORAGE_KEY);
-                    if (saved) {
-                        const parsed = JSON.parse(saved);
-                        state.checkedItems = {};
-                        if (parsed.checkedItems) {
-                            Object.keys(parsed.checkedItems).forEach(id => {
-                                if (id.startsWith('r') && parsed.checkedItems[id]) {
-                                    state.checkedItems[id] = true;
-                                }
+                    const res = await fetch(`/api/progress/${currentUserUID}`);
+                    if (res.ok) {
+                        const data = await res.json();
+                        if (data.rings) {
+                            state.checkedItems = {};
+                            data.rings.forEach(id => { 
+                                if (id.startsWith('r')) state.checkedItems[id] = true; 
                             });
+                            return;
                         }
                     }
-                } catch (err) {
-                    console.error('Failed to load local storage state', err);
+                } catch (e) {
+                    console.error('Failed to load from DB. Falling back to local storage.', e);
                 }
+            }
+
+            try {
+                const saved = localStorage.getItem(STORAGE_KEY);
+                if (saved) {
+                    const parsed = JSON.parse(saved);
+                    state.checkedItems = {};
+                    if (parsed.checkedItems) {
+                        Object.keys(parsed.checkedItems).forEach(id => {
+                            if (id.startsWith('r') && parsed.checkedItems[id]) {
+                                state.checkedItems[id] = true;
+                            }
+                        });
+                    }
+                }
+            } catch (err) {
+                console.error('Failed to load local storage state', err);
             }
         }
 
@@ -365,19 +446,21 @@
                 console.error('Failed to save to LocalStorage', e);
             }
 
-            const rings = [];
-            Object.keys(state.checkedItems).forEach(id => {
-                if (state.checkedItems[id] && id.startsWith('r')) rings.push(id);
-            });
-
-            try {
-                await fetch(`/api/progress/${USER_ID}`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ gestures: [], rings })
+            if (currentUserUID) {
+                const rings = [];
+                Object.keys(state.checkedItems).forEach(id => {
+                    if (state.checkedItems[id] && id.startsWith('r')) rings.push(id);
                 });
-            } catch (e) {
-                console.error('Failed to sync with Neon DB', e);
+
+                try {
+                    await fetch(`/api/progress/${currentUserUID}`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ gestures: [], rings })
+                    });
+                } catch (e) {
+                    console.error('Failed to sync with DB', e);
+                }
             }
         }
 
@@ -718,6 +801,21 @@
             };
             reader.readAsText(file);
         }
+
+        // Export Window Functions
+        window.exportData = exportData;
+        window.importData = importData;
+        window.openResetModal = openResetModal;
+        window.closeResetModal = closeResetModal;
+        window.confirmReset = confirmReset;
+        window.setStatusFilter = setStatusFilter;
+        window.setNgFilter = setNgFilter;
+        window.resetAllFilters = resetAllFilters;
+        window.onSearchInput = onSearchInput;
+        window.handleSearchKey = handleSearchKey;
+        window.clearSearch = clearSearch;
+        window.toggleItem = toggleItem;
+        window.jumpToItem = jumpToItem;
     </script>
 </body>
 </html>

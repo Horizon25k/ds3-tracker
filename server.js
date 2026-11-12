@@ -56,6 +56,17 @@ app.post("/api/progress/:userId", async (req, res) => {
   }
 });
 
+app.get("/api/config", (req, res) => {
+  res.json({
+    apiKey: process.env.apiKey,
+    authDomain: process.env.authDomain,
+    projectId: process.env.projectId,
+    storageBucket: process.env.storageBucket,
+    messagingSenderId: process.env.messagingSenderId,
+    appId: process.env.appId,
+  });
+});
+
 app.listen(port, () => {
   console.log(`Server running on port ${port}`);
 });
