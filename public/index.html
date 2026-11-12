@@ -4,13 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dark Souls 3 - Master of Rings Tracker</title>
-    <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Google Fonts: Cinzel & Inter -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800;900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <!-- FontAwesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <script>
@@ -74,7 +71,7 @@
                 </div>
 
                 <div class="flex items-center gap-2 flex-wrap sm:flex-nowrap">
-                    <!-- โซน Firebase Login -->
+                    <!-- Firebase Login -->
                     <div class="flex items-center gap-2 mr-1 sm:mr-3 border-r border-dsBorder pr-2 sm:pr-4">
                         <div id="userInfoContainer" class="hidden flex items-center gap-2">
                             <img id="userAvatar" src="" alt="Avatar" class="w-6 h-6 rounded-full border border-dsGold">
@@ -88,7 +85,6 @@
                         </button>
                     </div>
 
-                    <!-- เครื่องมือเดิม -->
                     <button onclick="exportData()" class="px-3 py-1.5 text-xs font-semibold rounded-md bg-dsCardBg hover:bg-dsBorder border border-dsBorder text-gray-300 hover:text-dsGold transition flex items-center gap-1.5 touch-manipulation active:scale-95">
                         <i class="fa-solid fa-download text-dsGold"></i> Backup
                     </button>
@@ -130,8 +126,8 @@
                     <div class="relative flex items-center">
                         <i class="fa-solid fa-magnifying-glass absolute left-3.5 text-dsGold text-base"></i>
                         <input type="text" id="searchInput" onkeyup="handleSearchKey(event)" oninput="onSearchInput()" onfocus="onSearchInput()"
-                               placeholder="พิมพ์ชื่อแหวน... (เช่น Life Ring, Havel, Hornet)"
-                               class="w-full bg-dsDarkBg border-2 border-dsGold/60 rounded-lg pl-11 pr-24 py-3 text-sm text-white focus:outline-none focus:border-dsGold focus:ring-2 focus:ring-dsGold/30 transition placeholder-gray-500 shadow-inner">
+                                placeholder="พิมพ์ชื่อแหวน... (เช่น Life Ring, Havel, Hornet)"
+                                class="w-full bg-dsDarkBg border-2 border-dsGold/60 rounded-lg pl-11 pr-24 py-3 text-sm text-white focus:outline-none focus:border-dsGold focus:ring-2 focus:ring-dsGold/30 transition placeholder-gray-500 shadow-inner">
                         
                         <button id="clearSearchBtn" onclick="clearSearch()" class="hidden absolute right-3.5 text-gray-400 hover:text-dsGold text-xs p-1 bg-dsCardBg rounded border border-dsBorder">
                             <i class="fa-solid fa-xmark mr-1"></i>ล้าง
@@ -171,10 +167,16 @@
         </div>
     </main>
 
-    <footer class="border-t border-dsBorder bg-dsDarkBg py-6 mt-12 text-center text-xs text-gray-500">
-        <div class="max-w-7xl mx-auto px-4">
-            <p class="font-cinzel text-dsGold/80 tracking-widest font-bold">DARK SOULS III TROPHY TRACKER</p>
-            <p class="mt-1">รองรับการใช้งานอย่างสมบูรณ์แบบบน PC, iPad และ Android | บันทึกข้อมูลอัตโนมัติ</p>
+    <footer class="border-t border-dsBorder bg-dsDarkBg py-8 mt-12 text-center text-xs text-gray-500">
+        <div class="max-w-7xl mx-auto px-4 flex flex-col items-center justify-center gap-3">
+            <a href="https://github.com/Horizon25k/ds3-tracker" target="_blank" rel="noopener noreferrer" 
+                class="inline-flex items-center gap-2.5 px-4 py-2 rounded-xl bg-dsCardBg border border-dsGold/60 text-dsGold hover:bg-dsGold hover:text-black font-cinzel font-bold text-sm transition-all duration-300 gold-glow shadow-lg group">
+                <i class="fa-brands fa-github text-lg group-hover:scale-110 transition-transform"></i>
+                <span>VIEW SOURCE ON GITHUB</span>
+                <i class="fa-solid fa-arrow-up-right-from-square text-xs opacity-80"></i>
+            </a>
+
+            <p class="font-cinzel text-dsGold/60 tracking-widest text-[11px] uppercase mt-1">DARK SOULS III TROPHY TRACKER</p>
         </div>
     </footer>
 
@@ -199,11 +201,9 @@
     </div>
 
     <script type="module">
-        // 1. นำเข้า Firebase Modules
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-app.js";
         import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-auth.js";
 
-        // 2. ดึงค่า Firebase Config จาก API ฝั่ง Backend (/api/config)
         let firebaseConfig = {};
         try {
             const configRes = await fetch('/api/config');
@@ -212,7 +212,6 @@
             console.error("Failed to fetch Firebase config from server:", err);
         }
 
-        // 3. Initialize Firebase
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const provider = new GoogleAuthProvider();
@@ -220,7 +219,6 @@
         let currentUserUID = null;
         const STORAGE_KEY = 'ds3_trophy_tracker_v2';
 
-        // 4. จัดการปุ่ม Login / Logout
         document.getElementById('loginBtn').addEventListener('click', () => {
             signInWithPopup(auth, provider).catch(error => console.error("Login failed:", error));
         });
@@ -233,7 +231,6 @@
             });
         });
 
-        // 5. ดักจับสถานะ Auth
         onAuthStateChanged(auth, async (user) => {
             const loginBtn = document.getElementById('loginBtn');
             const logoutBtn = document.getElementById('logoutBtn');
@@ -585,7 +582,7 @@
 
                 return `
                     <div onclick="jumpToItem('${item.id}')" 
-                         class="p-2.5 hover:bg-dsCardHover transition cursor-pointer flex items-center justify-between gap-3 group">
+                        class="p-2.5 hover:bg-dsCardHover transition cursor-pointer flex items-center justify-between gap-3 group">
                         <div class="flex items-center gap-2.5 overflow-hidden">
                             <span class="text-xs ${isChecked ? 'text-dsEmerald' : 'text-gray-500'}">
                                 ${isChecked ? '<i class="fa-solid fa-circle-check"></i>' : '<i class="fa-regular fa-circle"></i>'}
@@ -727,7 +724,7 @@
             div.innerHTML = `
                 <div class="flex items-start gap-3.5 flex-1">
                     <input type="checkbox" ${isChecked ? 'checked' : ''} onchange="toggleItem('${item.id}')" 
-                           class="custom-checkbox mt-1 shrink-0">
+                            class="custom-checkbox mt-1 shrink-0">
                     <div class="space-y-1">
                         <div class="flex items-center gap-2 flex-wrap">
                             <span class="px-2 py-0.5 text-[10px] uppercase font-bold rounded border ${badgeColor}">${item.tier}</span>
