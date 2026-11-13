@@ -66,7 +66,7 @@ function bindEvents() {
         renderList();
     });
 
-    // Status Filter
+    // Status Filter (ทั้งหมด / เก็บแล้ว / ยังไม่ได้)
     document.querySelectorAll('.filter-btn').forEach(btn => {
         btn.addEventListener('click', (e) => {
             document.querySelectorAll('.filter-btn').forEach(b => {
@@ -81,32 +81,42 @@ function bindEvents() {
         });
     });
 
+    const clearTypeAndNgActiveStyles = () => {
+        document.querySelectorAll('.ng-filter-btn, .type-filter-btn').forEach(b => {
+            b.classList.remove('bg-dsGold/20', 'text-dsGold', 'border-dsGold/40', 'font-bold', 'bg-cyan-500/20', 'text-cyan-400', 'border-cyan-500/60');
+            b.classList.add('text-gray-400', 'bg-dsDarkBg');
+        });
+    };
+
     // NG Filter (rings.html)
     document.querySelectorAll('.ng-filter-btn').forEach(btn => {
         btn.addEventListener('click', (e) => {
-            document.querySelectorAll('.ng-filter-btn').forEach(b => {
-                b.classList.remove('bg-dsGold/20', 'text-dsGold', 'border-dsGold/40', 'font-bold');
-                b.classList.add('text-gray-400', 'bg-dsDarkBg');
-            });
+            clearTypeAndNgActiveStyles();
             const target = e.currentTarget;
             target.classList.add('bg-dsGold/20', 'text-dsGold', 'border-dsGold/40', 'font-bold');
             target.classList.remove('text-gray-400', 'bg-dsDarkBg');
+            
             currentNgFilter = target.dataset.ng;
+            currentTypeFilter = 'all'; 
             renderList();
         });
     });
 
-    // Type / Quest Filter (gestures, sorceries, pyromancies, miracles, rings)
+    // Type / Quest Filter (gestures, sorceries, pyromancies, miracles, rings dlc)
     document.querySelectorAll('.type-filter-btn').forEach(btn => {
         btn.addEventListener('click', (e) => {
-            document.querySelectorAll('.type-filter-btn').forEach(b => {
-                b.classList.remove('bg-dsGold/20', 'text-dsGold', 'border-dsGold/40', 'font-bold');
-                b.classList.add('text-gray-400', 'bg-dsDarkBg');
-            });
+            clearTypeAndNgActiveStyles();
             const target = e.currentTarget;
-            target.classList.add('bg-dsGold/20', 'text-dsGold', 'border-dsGold/40', 'font-bold');
+            
+            if (target.dataset.type === 'dlc') {
+                target.classList.add('bg-cyan-500/20', 'text-cyan-400', 'border-cyan-500/60', 'font-bold');
+            } else {
+                target.classList.add('bg-dsGold/20', 'text-dsGold', 'border-dsGold/40', 'font-bold');
+            }
             target.classList.remove('text-gray-400', 'bg-dsDarkBg');
+            
             currentTypeFilter = target.dataset.type;
+            currentNgFilter = 'all'; 
             renderList();
         });
     });
@@ -149,7 +159,6 @@ function isDLCItem(item) {
 }
 
 function getSorceryType(item) {
-    if (isDLCItem(item)) return 'dlc';
     if (item.type) return item.type;
     const loc = (item.location || '').toLowerCase();
     if (loc.includes('soul of') || loc.includes('แลกจาก') || loc.includes('ludleth')) return 'boss';
@@ -159,7 +168,6 @@ function getSorceryType(item) {
 }
 
 function getPyromancyType(item) {
-    if (isDLCItem(item)) return 'dlc';
     if (item.type) return item.type;
     const loc = (item.location || '').toLowerCase();
     if (loc.includes('soul of') || loc.includes('แลกจาก') || loc.includes('ludleth')) return 'boss';
@@ -169,7 +177,6 @@ function getPyromancyType(item) {
 }
 
 function getMiracleType(item) {
-    if (isDLCItem(item)) return 'dlc';
     if (item.type) return item.type;
     const loc = (item.location || '').toLowerCase();
     if (loc.includes('soul of') || loc.includes('แลกจาก') || loc.includes('ludleth')) return 'boss';
@@ -184,6 +191,7 @@ function renderList() {
 
     const filtered = itemsData.filter(item => {
         const isObtained = userProgress.includes(item.id);
+        const itemIsDLC = isDLCItem(item);
         
         // Status Filter
         if (currentStatusFilter === 'obtained' && !isObtained) return false;
@@ -195,37 +203,46 @@ function renderList() {
             if (itemNg !== currentNgFilter) return false;
         }
 
-        // Type / Quest Filter (gestures.html)
+        // Gesture Filter
         if (trackerType === 'gestures' && currentTypeFilter !== 'all') {
             const isQuest = isQuestItem(item);
             if (currentTypeFilter === 'quest' && !isQuest) return false;
             if (currentTypeFilter === 'general' && isQuest) return false;
         }
 
-        // Type Filter (sorceries.html)
+        // Sorceries Filter
         if (trackerType === 'sorceries' && currentTypeFilter !== 'all') {
-            const sType = getSorceryType(item);
-            if (currentTypeFilter === 'dlc' && sType !== 'dlc') return false;
-            if (currentTypeFilter !== 'dlc' && currentTypeFilter !== sType) return false;
+            if (currentTypeFilter === 'dlc') {
+                if (!itemIsDLC) return false;
+            } else {
+                const sType = getSorceryType(item);
+                if (sType !== currentTypeFilter) return false;
+            }
         }
 
-        // Type Filter (pyromancies.html)
+        // Pyromancies Filter
         if (trackerType === 'pyromancies' && currentTypeFilter !== 'all') {
-            const pType = getPyromancyType(item);
-            if (currentTypeFilter === 'dlc' && pType !== 'dlc') return false;
-            if (currentTypeFilter !== 'dlc' && currentTypeFilter !== pType) return false;
+            if (currentTypeFilter === 'dlc') {
+                if (!itemIsDLC) return false;
+            } else {
+                const pType = getPyromancyType(item);
+                if (pType !== currentTypeFilter) return false;
+            }
         }
 
-        // Type Filter (miracles.html)
+        // Miracles Filter
         if (trackerType === 'miracles' && currentTypeFilter !== 'all') {
-            const mType = getMiracleType(item);
-            if (currentTypeFilter === 'dlc' && mType !== 'dlc') return false;
-            if (currentTypeFilter !== 'dlc' && currentTypeFilter !== mType) return false;
+            if (currentTypeFilter === 'dlc') {
+                if (!itemIsDLC) return false;
+            } else {
+                const mType = getMiracleType(item);
+                if (mType !== currentTypeFilter) return false;
+            }
         }
 
-        // Type Filter (rings.html)
+        // Rings DLC Filter
         if (trackerType === 'rings' && currentTypeFilter === 'dlc') {
-            if (!isDLCItem(item)) return false;
+            if (!itemIsDLC) return false;
         }
 
         // Search Filter
