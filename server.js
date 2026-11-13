@@ -33,9 +33,9 @@ app.post("/api/progress/:userId", async (req, res) => {
     const { gestures, rings } = req.body;
     await pool.query(
       `INSERT INTO user_progress (user_id, gestures, rings, updated_at)
-       VALUES ($1, $2, $3, NOW())
-       ON CONFLICT (user_id) 
-       DO UPDATE SET gestures = COALESCE($2, user_progress.gestures), rings = COALESCE($3, user_progress.rings), updated_at = NOW()`,
+        VALUES ($1, $2, $3, NOW())
+        ON CONFLICT (user_id) 
+        DO UPDATE SET gestures = COALESCE($2, user_progress.gestures), rings = COALESCE($3, user_progress.rings), updated_at = NOW()`,
       [userId, JSON.stringify(gestures || []), JSON.stringify(rings || [])]
     );
     res.json({ success: true });
