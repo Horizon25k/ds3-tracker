@@ -20,7 +20,7 @@ export function initTracker(type, data, user) {
 async function loadProgress() {
     if (currentUser) {
         try {
-            const res = await fetch(`/api/progress/${currentUser.uid}`);
+            const res = await fetch(`/api/progress/${currentUser}`);
             if (res.ok) {
                 const data = await res.json();
                 userProgress = data[trackerType] || [];
@@ -35,6 +35,12 @@ async function loadProgress() {
         userProgress = JSON.parse(localStorage.getItem(`ds3_${trackerType}`) || '[]');
     }
     updateUI();
+    renderList();
+}
+
+export async function setTrackerUser(user) {
+    currentUser = user;
+    await loadProgress();
 }
 
 async function saveProgress() {
@@ -268,8 +274,10 @@ function importBackup(e) {
                 localStorage.setItem('ds3_gestures', JSON.stringify(imported.gestures));
             }
 
+            userProgress = imported[trackerType] || [];
+
             if (currentUser) {
-                await fetch(`/api/progress/${currentUser.uid}`, {
+                await fetch(`/api/progress/${currentUser}`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
@@ -279,16 +287,13 @@ function importBackup(e) {
                 });
             }
 
+            updateUI();
+            renderList();
+
             alert('นำเข้าข้อมูลเรียบร้อยแล้ว!');
-            window.location.reload();
         } catch (err) {
             alert('ไฟล์ Backup ไม่ถูกต้อง หรือเกิดความผิดพลาดในการอ่านไฟล์');
         }
     };
     reader.readAsText(file);
-   
-}
-export function setTrackerUser(user) {
-    currentUser = user;
-    loadProgress();
 }
