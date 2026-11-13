@@ -66,57 +66,70 @@ function bindEvents() {
         renderList();
     });
 
+    // Helper สลับสไตล์ปุ่ม Filter โดยไม่กระทบโครงสร้างปุ่ม
+    const updateActiveButton = (buttons, selectedBtn, activeClasses) => {
+        buttons.forEach(b => {
+            b.classList.remove(
+                'bg-dsGold', 'text-black', 'font-bold',
+                'bg-dsGold/20', 'text-dsGold', 'border-dsGold/40',
+                'bg-cyan-500/20', 'text-cyan-400', 'border-cyan-500/60'
+            );
+            b.classList.add('text-gray-400', 'bg-dsDarkBg', 'border-dsBorder');
+        });
+
+        selectedBtn.classList.remove('text-gray-400', 'bg-dsDarkBg', 'border-dsBorder');
+        selectedBtn.classList.add(...activeClasses);
+    };
+
     // Status Filter (ทั้งหมด / เก็บแล้ว / ยังไม่ได้)
     document.querySelectorAll('.filter-btn').forEach(btn => {
         btn.addEventListener('click', (e) => {
-            document.querySelectorAll('.filter-btn').forEach(b => {
-                b.classList.remove('bg-dsGold', 'text-black', 'font-bold');
-                b.classList.add('text-gray-400', 'bg-dsDarkBg');
-            });
-            const target = e.currentTarget;
-            target.classList.add('bg-dsGold', 'text-black', 'font-bold');
-            target.classList.remove('text-gray-400', 'bg-dsDarkBg');
-            currentStatusFilter = target.dataset.status;
+            updateActiveButton(
+                document.querySelectorAll('.filter-btn'),
+                e.currentTarget,
+                ['bg-dsGold', 'text-black', 'font-bold']
+            );
+            currentStatusFilter = e.currentTarget.dataset.status;
             renderList();
         });
     });
 
-    const clearTypeAndNgActiveStyles = () => {
-        document.querySelectorAll('.ng-filter-btn, .type-filter-btn').forEach(b => {
-            b.classList.remove('bg-dsGold/20', 'text-dsGold', 'border-dsGold/40', 'font-bold', 'bg-cyan-500/20', 'text-cyan-400', 'border-cyan-500/60');
-            b.classList.add('text-gray-400', 'bg-dsDarkBg');
-        });
-    };
-
-    // NG Filter (rings.html)
+    // NG Filter (หน้า rings.html)
     document.querySelectorAll('.ng-filter-btn').forEach(btn => {
         btn.addEventListener('click', (e) => {
-            clearTypeAndNgActiveStyles();
             const target = e.currentTarget;
-            target.classList.add('bg-dsGold/20', 'text-dsGold', 'border-dsGold/40', 'font-bold');
-            target.classList.remove('text-gray-400', 'bg-dsDarkBg');
-            
+            const isDlc = target.dataset.ng === 'DLC';
+
+            updateActiveButton(
+                document.querySelectorAll('.ng-filter-btn, .type-filter-btn'),
+                target,
+                isDlc 
+                    ? ['bg-cyan-500/20', 'text-cyan-400', 'border-cyan-500/60', 'font-bold']
+                    : ['bg-dsGold/20', 'text-dsGold', 'border-dsGold/40', 'font-bold']
+            );
+
             currentNgFilter = target.dataset.ng;
-            currentTypeFilter = 'all'; 
+            currentTypeFilter = 'all'; // รีเซ็ต type filter
             renderList();
         });
     });
 
-    // Type / Quest Filter (gestures, sorceries, pyromancies, miracles, rings dlc)
+    // Type Filter (gestures, sorceries, pyromancies, miracles)
     document.querySelectorAll('.type-filter-btn').forEach(btn => {
         btn.addEventListener('click', (e) => {
-            clearTypeAndNgActiveStyles();
             const target = e.currentTarget;
-            
-            if (target.dataset.type === 'dlc') {
-                target.classList.add('bg-cyan-500/20', 'text-cyan-400', 'border-cyan-500/60', 'font-bold');
-            } else {
-                target.classList.add('bg-dsGold/20', 'text-dsGold', 'border-dsGold/40', 'font-bold');
-            }
-            target.classList.remove('text-gray-400', 'bg-dsDarkBg');
-            
+            const isDlc = target.dataset.type === 'dlc';
+
+            updateActiveButton(
+                document.querySelectorAll('.ng-filter-btn, .type-filter-btn'),
+                target,
+                isDlc 
+                    ? ['bg-cyan-500/20', 'text-cyan-400', 'border-cyan-500/60', 'font-bold']
+                    : ['bg-dsGold/20', 'text-dsGold', 'border-dsGold/40', 'font-bold']
+            );
+
             currentTypeFilter = target.dataset.type;
-            currentNgFilter = 'all'; 
+            currentNgFilter = 'all'; // รีเซ็ต NG filter
             renderList();
         });
     });
@@ -189,6 +202,9 @@ function renderList() {
     const container = document.getElementById('listContainer');
     if (!container) return;
 
+    // ล็อกความสูงขั้นต่ำป้องกันหน้าจอยุบเด้งเวลาจำนวนไอเทมลดลง
+    container.style.minHeight = '350px';
+
     const filtered = itemsData.filter(item => {
         const isObtained = userProgress.includes(item.id);
         const itemIsDLC = isDLCItem(item);
@@ -197,52 +213,53 @@ function renderList() {
         if (currentStatusFilter === 'obtained' && !isObtained) return false;
         if (currentStatusFilter === 'remaining' && isObtained) return false;
 
-        // NG Filter (rings.html)
-        if (trackerType === 'rings' && currentNgFilter !== 'all') {
-            const itemNg = getItemNG(item);
-            if (itemNg !== currentNgFilter) return false;
+        // Rings Filter (rings.html)
+        if (trackerType === 'rings') {
+            if (currentNgFilter !== 'all') {
+                if (currentNgFilter === 'DLC') {
+                    if (!itemIsDLC) return false;
+                } else {
+                    const itemNg = getItemNG(item);
+                    if (itemNg !== currentNgFilter || itemIsDLC) return false;
+                }
+            }
         }
 
-        // Gesture Filter
+        // Gesture Filter (gestures.html)
         if (trackerType === 'gestures' && currentTypeFilter !== 'all') {
             const isQuest = isQuestItem(item);
             if (currentTypeFilter === 'quest' && !isQuest) return false;
             if (currentTypeFilter === 'general' && isQuest) return false;
         }
 
-        // Sorceries Filter
+        // Sorceries Filter (sorceries.html)
         if (trackerType === 'sorceries' && currentTypeFilter !== 'all') {
             if (currentTypeFilter === 'dlc') {
                 if (!itemIsDLC) return false;
             } else {
                 const sType = getSorceryType(item);
-                if (sType !== currentTypeFilter) return false;
+                if (sType !== currentTypeFilter || itemIsDLC) return false;
             }
         }
 
-        // Pyromancies Filter
+        // Pyromancies Filter (pyromancies.html)
         if (trackerType === 'pyromancies' && currentTypeFilter !== 'all') {
             if (currentTypeFilter === 'dlc') {
                 if (!itemIsDLC) return false;
             } else {
                 const pType = getPyromancyType(item);
-                if (pType !== currentTypeFilter) return false;
+                if (pType !== currentTypeFilter || itemIsDLC) return false;
             }
         }
 
-        // Miracles Filter
+        // Miracles Filter (miracles.html)
         if (trackerType === 'miracles' && currentTypeFilter !== 'all') {
             if (currentTypeFilter === 'dlc') {
                 if (!itemIsDLC) return false;
             } else {
                 const mType = getMiracleType(item);
-                if (mType !== currentTypeFilter) return false;
+                if (mType !== currentTypeFilter || itemIsDLC) return false;
             }
-        }
-
-        // Rings DLC Filter
-        if (trackerType === 'rings' && currentTypeFilter === 'dlc') {
-            if (!itemIsDLC) return false;
         }
 
         // Search Filter
