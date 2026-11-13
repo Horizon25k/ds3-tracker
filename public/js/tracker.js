@@ -297,3 +297,38 @@ function importBackup(e) {
     };
     reader.readAsText(file);
 }
+
+//  Sorcery
+function getSorceryType(item) {
+    if (item.type) return item.type; // 'npc', 'boss', 'loot'
+    const loc = (item.location || '').toLowerCase();
+    if (loc.includes('soul of') || loc.includes('แลกจาก') || loc.includes('ludleth')) return 'boss';
+    if (loc.includes('ซื้อ') || loc.includes('orbeck') || loc.includes('karla') || loc.includes('yuria')) return 'npc';
+    return 'loot';
+}
+
+if (trackerType === 'sorceries' && currentTypeFilter !== 'all') {
+    const sType = getSorceryType(item);
+    if (currentTypeFilter !== sType) return false;
+}
+
+else if (trackerType === 'sorceries') {
+    const sType = getSorceryType(item);
+    if (sType === 'boss') {
+        tagHtml = `<span class="text-[10px] px-1.5 py-0.5 rounded border border-purple-500/40 text-purple-400 ml-1.5"><i class="fa-solid fa-skull mr-1"></i>Soul บอส</span>`;
+    } else if (sType === 'npc') {
+        tagHtml = `<span class="text-[10px] px-1.5 py-0.5 rounded border border-amber-500/40 text-amber-400 ml-1.5"><i class="fa-solid fa-user-tag mr-1"></i>NPC/เควส</span>`;
+    } else {
+        tagHtml = `<span class="text-[10px] px-1.5 py-0.5 rounded border border-blue-500/40 text-blue-400 ml-1.5"><i class="fa-solid fa-box-open mr-1"></i>เก็บตามฉาก</span>`;
+    }
+}
+
+
+function exportBackup() {
+    const backupData = {
+        rings: JSON.parse(localStorage.getItem('ds3_rings') || '[]'),
+        gestures: JSON.parse(localStorage.getItem('ds3_gestures') || '[]'),
+        sorceries: JSON.parse(localStorage.getItem('ds3_sorceries') || '[]'),
+        exportedAt: new Date().toISOString()
+    };
+}
