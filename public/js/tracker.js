@@ -96,7 +96,7 @@ function bindEvents() {
         });
     });
 
-    // Type / Quest Filter (gestures, sorceries, pyromancies, miracles)
+    // Type / Quest Filter (gestures, sorceries, pyromancies, miracles, rings)
     document.querySelectorAll('.type-filter-btn').forEach(btn => {
         btn.addEventListener('click', (e) => {
             document.querySelectorAll('.type-filter-btn').forEach(b => {
@@ -143,7 +143,13 @@ function isQuestItem(item) {
     return npcList.some(npc => loc.includes(npc.toLowerCase())) || loc.includes('quest') || loc.includes('npc');
 }
 
+function isDLCItem(item) {
+    const loc = (item.location || '').toLowerCase();
+    return loc.startsWith('dlc:') || loc.includes('dlc') || loc.includes('ariandel') || loc.includes('ringed city') || loc.includes('dreg heap');
+}
+
 function getSorceryType(item) {
+    if (isDLCItem(item)) return 'dlc';
     if (item.type) return item.type;
     const loc = (item.location || '').toLowerCase();
     if (loc.includes('soul of') || loc.includes('แลกจาก') || loc.includes('ludleth')) return 'boss';
@@ -153,6 +159,7 @@ function getSorceryType(item) {
 }
 
 function getPyromancyType(item) {
+    if (isDLCItem(item)) return 'dlc';
     if (item.type) return item.type;
     const loc = (item.location || '').toLowerCase();
     if (loc.includes('soul of') || loc.includes('แลกจาก') || loc.includes('ludleth')) return 'boss';
@@ -162,6 +169,7 @@ function getPyromancyType(item) {
 }
 
 function getMiracleType(item) {
+    if (isDLCItem(item)) return 'dlc';
     if (item.type) return item.type;
     const loc = (item.location || '').toLowerCase();
     if (loc.includes('soul of') || loc.includes('แลกจาก') || loc.includes('ludleth')) return 'boss';
@@ -197,19 +205,27 @@ function renderList() {
         // Type Filter (sorceries.html)
         if (trackerType === 'sorceries' && currentTypeFilter !== 'all') {
             const sType = getSorceryType(item);
-            if (currentTypeFilter !== sType) return false;
+            if (currentTypeFilter === 'dlc' && sType !== 'dlc') return false;
+            if (currentTypeFilter !== 'dlc' && currentTypeFilter !== sType) return false;
         }
 
         // Type Filter (pyromancies.html)
         if (trackerType === 'pyromancies' && currentTypeFilter !== 'all') {
             const pType = getPyromancyType(item);
-            if (currentTypeFilter !== pType) return false;
+            if (currentTypeFilter === 'dlc' && pType !== 'dlc') return false;
+            if (currentTypeFilter !== 'dlc' && currentTypeFilter !== pType) return false;
         }
 
         // Type Filter (miracles.html)
         if (trackerType === 'miracles' && currentTypeFilter !== 'all') {
             const mType = getMiracleType(item);
-            if (currentTypeFilter !== mType) return false;
+            if (currentTypeFilter === 'dlc' && mType !== 'dlc') return false;
+            if (currentTypeFilter !== 'dlc' && currentTypeFilter !== mType) return false;
+        }
+
+        // Type Filter (rings.html)
+        if (trackerType === 'rings' && currentTypeFilter === 'dlc') {
+            if (!isDLCItem(item)) return false;
         }
 
         // Search Filter
@@ -229,9 +245,12 @@ function renderList() {
 
     container.innerHTML = filtered.map(item => {
         const checked = userProgress.includes(item.id);
+        const itemIsDLC = isDLCItem(item);
         
         let tagHtml = '';
-        if (trackerType === 'rings') {
+        if (itemIsDLC) {
+            tagHtml = `<span class="text-[10px] px-1.5 py-0.5 rounded border border-cyan-500/40 text-cyan-400 ml-1.5"><i class="fa-solid fa-snowflake mr-1"></i>DLC</span>`;
+        } else if (trackerType === 'rings') {
             const ngTag = getItemNG(item);
             tagHtml = `<span class="text-[10px] px-1.5 py-0.5 rounded border border-dsGold/40 text-dsGold ml-1.5">${ngTag}</span>`;
         } else if (trackerType === 'gestures') {
