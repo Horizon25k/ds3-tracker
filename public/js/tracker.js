@@ -96,7 +96,7 @@ function bindEvents() {
         });
     });
 
-    // Type / Quest Filter (gestures, sorceries, pyromancies)
+    // Type / Quest Filter (gestures, sorceries, pyromancies, miracles)
     document.querySelectorAll('.type-filter-btn').forEach(btn => {
         btn.addEventListener('click', (e) => {
             document.querySelectorAll('.type-filter-btn').forEach(b => {
@@ -161,6 +161,15 @@ function getPyromancyType(item) {
     return 'loot';
 }
 
+function getMiracleType(item) {
+    if (item.type) return item.type;
+    const loc = (item.location || '').toLowerCase();
+    if (loc.includes('soul of') || loc.includes('แลกจาก') || loc.includes('ludleth')) return 'boss';
+    if (loc.includes('covenant') || loc.includes('sunlight') || loc.includes('darkmoon')) return 'covenant';
+    if (loc.includes('ซื้อ') || loc.includes('irina') || loc.includes('karla')) return 'npc';
+    return 'loot';
+}
+
 function renderList() {
     const container = document.getElementById('listContainer');
     if (!container) return;
@@ -195,6 +204,12 @@ function renderList() {
         if (trackerType === 'pyromancies' && currentTypeFilter !== 'all') {
             const pType = getPyromancyType(item);
             if (currentTypeFilter !== pType) return false;
+        }
+
+        // Type Filter (miracles.html)
+        if (trackerType === 'miracles' && currentTypeFilter !== 'all') {
+            const mType = getMiracleType(item);
+            if (currentTypeFilter !== mType) return false;
         }
 
         // Search Filter
@@ -245,6 +260,17 @@ function renderList() {
                 tagHtml = `<span class="text-[10px] px-1.5 py-0.5 rounded border border-emerald-500/40 text-emerald-400 ml-1.5"><i class="fa-solid fa-shield-halved mr-1"></i>Covenant</span>`;
             } else {
                 tagHtml = `<span class="text-[10px] px-1.5 py-0.5 rounded border border-orange-500/40 text-orange-400 ml-1.5"><i class="fa-solid fa-fire mr-1"></i>เก็บตามฉาก</span>`;
+            }
+        } else if (trackerType === 'miracles') {
+            const mType = getMiracleType(item);
+            if (mType === 'boss') {
+                tagHtml = `<span class="text-[10px] px-1.5 py-0.5 rounded border border-purple-500/40 text-purple-400 ml-1.5"><i class="fa-solid fa-skull mr-1"></i>Soul บอส</span>`;
+            } else if (mType === 'npc') {
+                tagHtml = `<span class="text-[10px] px-1.5 py-0.5 rounded border border-amber-500/40 text-amber-400 ml-1.5"><i class="fa-solid fa-book-bookmark mr-1"></i>NPC/Tome</span>`;
+            } else if (mType === 'covenant') {
+                tagHtml = `<span class="text-[10px] px-1.5 py-0.5 rounded border border-emerald-500/40 text-emerald-400 ml-1.5"><i class="fa-solid fa-shield-halved mr-1"></i>Covenant</span>`;
+            } else {
+                tagHtml = `<span class="text-[10px] px-1.5 py-0.5 rounded border border-yellow-500/40 text-yellow-400 ml-1.5"><i class="fa-solid fa-sun mr-1"></i>เก็บตามฉาก</span>`;
             }
         }
 
@@ -298,6 +324,7 @@ export function exportBackup() {
         gestures: JSON.parse(localStorage.getItem('ds3_gestures') || '[]'),
         sorceries: JSON.parse(localStorage.getItem('ds3_sorceries') || '[]'),
         pyromancies: JSON.parse(localStorage.getItem('ds3_pyromancies') || '[]'),
+        miracles: JSON.parse(localStorage.getItem('ds3_miracles') || '[]'),
         exportedAt: new Date().toISOString()
     };
 
@@ -318,18 +345,11 @@ export function importBackup(e) {
     reader.onload = async (event) => {
         try {
             const imported = JSON.parse(event.target.result);
-            if (imported.rings && Array.isArray(imported.rings)) {
-                localStorage.setItem('ds3_rings', JSON.stringify(imported.rings));
-            }
-            if (imported.gestures && Array.isArray(imported.gestures)) {
-                localStorage.setItem('ds3_gestures', JSON.stringify(imported.gestures));
-            }
-            if (imported.sorceries && Array.isArray(imported.sorceries)) {
-                localStorage.setItem('ds3_sorceries', JSON.stringify(imported.sorceries));
-            }
-            if (imported.pyromancies && Array.isArray(imported.pyromancies)) {
-                localStorage.setItem('ds3_pyromancies', JSON.stringify(imported.pyromancies));
-            }
+            if (imported.rings && Array.isArray(imported.rings)) localStorage.setItem('ds3_rings', JSON.stringify(imported.rings));
+            if (imported.gestures && Array.isArray(imported.gestures)) localStorage.setItem('ds3_gestures', JSON.stringify(imported.gestures));
+            if (imported.sorceries && Array.isArray(imported.sorceries)) localStorage.setItem('ds3_sorceries', JSON.stringify(imported.sorceries));
+            if (imported.pyromancies && Array.isArray(imported.pyromancies)) localStorage.setItem('ds3_pyromancies', JSON.stringify(imported.pyromancies));
+            if (imported.miracles && Array.isArray(imported.miracles)) localStorage.setItem('ds3_miracles', JSON.stringify(imported.miracles));
 
             userProgress = imported[trackerType] || [];
 
@@ -341,7 +361,8 @@ export function importBackup(e) {
                         rings: imported.rings || [],
                         gestures: imported.gestures || [],
                         sorceries: imported.sorceries || [],
-                        pyromancies: imported.pyromancies || []
+                        pyromancies: imported.pyromancies || [],
+                        miracles: imported.miracles || []
                     })
                 });
             }

@@ -1,0 +1,46 @@
+export const MIRACLES_DATA = [
+    // --- คาถาเริ่มต้น / ซื้อจาก Irina of Carim ---
+    { id: 'm1', cat: 'miracles', name: 'Heal Aid', type: 'npc', location: 'เริ่มต้นของสาย Herald หรือซื้อได้จาก Shrine Handmaid (ราคา 500 Souls)' },
+    { id: 'm2', cat: 'miracles', name: 'Heal', type: 'npc', location: 'เริ่มต้นของสาย Cleric หรือซื้อได้จาก Irina of Carim (ราคา 1,000 Souls)' },
+    { id: 'm3', cat: 'miracles', name: 'Med Heal', type: 'npc', location: 'ซื้อได้จาก Irina of Carim (ราคา 3,500 Souls)' },
+    { id: 'm4', cat: 'miracles', name: 'Great Heal', type: 'loot', location: 'เก็บจากศพใต้น้ำในปลักหนองน้ำ Irithyll of the Boreal Valley' },
+    { id: 'm5', cat: 'miracles', name: 'Soothing Sunlight', type: 'boss', location: 'แลกจาก Soul of the Dancer (กับ Ludleth of Courland)' },
+    { id: 'm6', cat: 'miracles', name: 'Replenishment', type: 'npc', location: 'ซื้อได้จาก Irina of Carim (ราคา 1,000 Souls)' },
+    { id: 'm7', cat: 'miracles', name: 'Bountiful Light', type: 'npc', location: 'ซื้อได้จาก Irina of Carim (มอบ Braille Divine Tome of Lothric - ราคา 5,000 Souls)' },
+    { id: 'm8', cat: 'miracles', name: 'Bountiful Sunlight', type: 'boss', location: 'แลกจาก Soul of Rosaria, Mother of Rebirth (กับ Ludleth of Courland)' },
+    { id: 'm9', cat: 'miracles', name: 'Caress of Tears', type: 'npc', location: 'ซื้อได้จาก Irina of Carim (ราคา 1,500 Souls)' },
+    { id: 'm10', cat: 'miracles', name: 'Tears of Denial', type: 'npc', location: 'ซื้อได้จาก Irina of Carim (มอบ Carim Braille Divine Tome - ราคา 10,000 Souls)' },
+    { id: 'm11', cat: 'miracles', name: 'Homeward', type: 'npc', location: 'ซื้อได้จาก Irina of Carim (ราคา 3,000 Souls)' },
+    { id: 'm12', cat: 'miracles', name: 'Seek Guidance', type: 'loot', location: 'เก็บจากศพใน Cathedral of the Deep' },
+    { id: 'm13', cat: 'miracles', name: 'Sacred Oath', type: 'covenant', location: 'รางวัล Rank 1 จาก Covenant: Warriors of Sunlight (ถวาย 10 Sunlight Medals)' },
+    { id: 'm14', cat: 'miracles', name: 'Force', type: 'npc', location: 'ซื้อได้จาก Irina of Carim (มอบ Braille Divine Tome of Carim - ราคา 1,000 Souls)' },
+    { id: 'm15', cat: 'miracles', name: 'Emit Force', type: 'npc', location: 'ได้จาก Siegward of Catarina (คุยในห้องครัวที่ Irithyll of the Boreal Valley)' },
+    { id: 'm16', cat: 'miracles', name: 'Wrath of the Gods', type: 'loot', location: 'เก็บจากศพตรงแท่นบูชาหินด้านบนซุ้มประตูใน Profaned Capital' },
+    { id: 'm17', cat: 'miracles', name: 'Lightning Spear', type: 'loot', location: 'เก็บจากศพบนยอดหอคอยเหนือขึ้นไปจากกิลด์ Old Wolf of Farron' },
+    { id: 'm18', cat: 'miracles', name: 'Great Lightning Spear', type: 'covenant', location: 'รางวัล Rank 2 จาก Covenant: Warriors of Sunlight (ถวาย 30 Sunlight Medals)' },
+    { id: 'm19', cat: 'miracles', name: 'Sunlight Spear', type: 'boss', location: 'แลกจาก Soul of the Cinder (กับ Ludleth of Courland)' },
+    { id: 'm20', cat: 'miracles', name: 'Lightning Stake', type: 'loot', location: 'ดรอปจากหนอนยักษ์ Carthus Sandworm บริเวณ Smouldering Lake' },
+    { id: 'm21', cat: 'miracles', name: 'Lightning Storm', type: 'boss', location: 'แลกจาก Soul of the Nameless King (กับ Ludleth of Courland)' },
+    { id: 'm22', cat: 'miracles', name: 'Divine Pillars of Light', type: 'loot', location: 'เก็บในกรงนกยักษ์บนหลังคา Grand Archives' },
+    { id: 'm23', cat: 'miracles', name: 'Blessed Weapon', type: 'npc', location: 'ซื้อได้จาก Irina of Carim (มอบ Braille Divine Tome of Lothric - ราคา 8,000 Souls)' },
+    { id: 'm24', cat: 'miracles', name: 'Lightning Blade', type: 'loot', location: 'เก็บใกล้ลิฟต์ทางลงใน Irithyll Dungeon' },
+    { id: 'm25', cat: 'miracles', name: 'Darkmoon Blade', type: 'covenant', location: 'รางวัล Rank 2 จาก Covenant: Blades of the Darkmoon (ถวาย 30 Proof of a Concord Kept)' },
+    { id: 'm26', cat: 'miracles', name: 'Magic Barrier', type: 'npc', location: 'ซื้อได้จาก Irina of Carim (มอบ Braille Divine Tome of Lothric - ราคา 5,000 Souls)' },
+    { id: 'm27', cat: 'miracles', name: 'Great Magic Barrier', type: 'loot', location: 'เก็บใน Archdragon Peak (โดดลงจากซากมังกรใกล้บอนไฟร์)' },
+    { id: 'm28', cat: 'miracles', name: 'Atonement', type: 'loot', location: 'เก็บในห้องลับตรงบ่อน้ำพิษของ Farron Keep' },
+    { id: 'm29', cat: 'miracles', name: 'Deep Protection', type: 'npc', location: 'ซื้อได้จาก Karla (มอบ Deep Braille Divine Tome - ราคา 4,000 Souls)' },
+    { id: 'm30', cat: 'miracles', name: 'Gnaw', type: 'npc', location: 'ซื้อได้จาก Karla (มอบ Deep Braille Divine Tome - ราคา 2,000 Souls)' },
+    { id: 'm31', cat: 'miracles', name: 'Dorhys\' Gnawing', type: 'loot', location: 'ดรอปจากแม่มดอ้วน Evangelist ตรงหลังกำแพงลวงตาใน Irithyll of the Boreal Valley' },
+    { id: 'm32', cat: 'miracles', name: 'Lifehunt Scythe', type: 'boss', location: 'แลกจาก Soul of Aldrich (กับ Ludleth of Courland)' },
+    { id: 'm33', cat: 'miracles', name: 'Dead Again', type: 'npc', location: 'ซื้อได้จาก Karla (มอบ Londor Braille Divine Tome - ราคา 5,000 Souls)' },
+    { id: 'm34', cat: 'miracles', name: 'Dark Blade', type: 'npc', location: 'ซื้อได้จาก Karla (มอบ Londor Braille Divine Tome - ราคา 10,000 Souls)' },
+    { id: 'm35', cat: 'miracles', name: 'Vow of Silence', type: 'npc', location: 'ซื้อได้จาก Karla (มอบ Londor Braille Divine Tome - ราคา 15,000 Souls)' },
+
+    // ============================================
+    // --- DLC Expansion: Ashes of Ariandel & The Ringed City ---
+    // ============================================
+    { id: 'm36', cat: 'miracles', name: 'Lightning Arrow', type: 'loot', location: 'DLC: เก็บในห้องลับหลังกำแพงลวงตา (The Ringed City)' },
+    { id: 'm37', cat: 'miracles', name: 'Way of White Corona', type: 'loot', location: 'DLC: เก็บในโบสถ์ร้าง Corvian Settlement (Painted World of Ariandel)' },
+    { id: 'm38', cat: 'miracles', name: 'Projected Heal', type: 'loot', location: 'DLC: เก็บจากศพขอบผาใกล้มอนสเตอร์ยักษ์ (The Dreg Heap)' },
+    { id: 'm39', cat: 'miracles', name: 'Splitting Disk', type: 'loot', location: 'DLC: เก็บในซากปรักหักพัง (The Ringed City)' }
+].sort((a, b) => a.name.localeCompare(b.name));

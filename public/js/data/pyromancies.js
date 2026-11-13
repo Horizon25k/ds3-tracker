@@ -1,5 +1,4 @@
 export const PYROMANCIES_DATA = [
-    // --- เริ่มต้น / ซื้อได้จาก Cornyx of the Great Swamp ---
     { id: 'p1', cat: 'pyromancies', name: 'Fireball', type: 'npc', location: 'เริ่มต้นของสาย Pyromancer หรือซื้อจาก Cornyx of the Great Swamp (ราคา 1,000 Souls)' },
     { id: 'p2', cat: 'pyromancies', name: 'Fire Orb', type: 'npc', location: 'ซื้อได้จาก Cornyx of the Great Swamp (มอบ Great Swamp Pyromancy Tome - ราคา 3,000 Souls)' },
     { id: 'p3', cat: 'pyromancies', name: 'Bursting Fireball', type: 'npc', location: 'ซื้อได้จาก Cornyx of the Great Swamp (มอบ Great Swamp Pyromancy Tome - ราคา 5,000 Souls)' },
@@ -28,4 +27,8 @@ export const PYROMANCIES_DATA = [
     { id: 'p26', cat: 'pyromancies', name: 'Black Serpent', type: 'boss', location: 'แลกจาก Soul of High Lord Wolnir (กับ Ludleth of Courland)' },
     { id: 'p27', cat: 'pyromancies', name: 'Demon Beacon', type: 'boss', location: 'แลกจาก Soul of the Demon Prince (กับ Ludleth of Courland)' },
 
+    // --- DLC Expansion Pyromancies (id: p28 - p30) ---
+    { id: 'p28', cat: 'pyromancies', name: 'Floating Chaos', type: 'loot', location: 'DLC: ดรอปจาก Livid Pyromancer Dunnel (Painted World of Ariandel)' },
+    { id: 'p29', cat: 'pyromancies', name: 'Flame Fan', type: 'loot', location: 'DLC: ดรอปจาก Desert Pyromancer Zoey (The Ringed City)' },
+    { id: 'p30', cat: 'pyromancies', name: 'Seething Chaos', type: 'boss', location: 'DLC: แลกจาก Soul of the Demon Prince (กับ Ludleth of Courland)' }
 ].sort((a, b) => a.name.localeCompare(b.name));
