@@ -47,7 +47,7 @@ async function saveProgress() {
     localStorage.setItem(`ds3_${trackerType}`, JSON.stringify(userProgress));
     if (currentUser) {
         try {
-            await fetch(`/api/progress/${currentUser.uid}`, {
+            await fetch(`/api/progress/${currentUser}`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ [trackerType]: userProgress })
@@ -96,7 +96,7 @@ function bindEvents() {
         });
     });
 
-    // Type / Quest Filter (gestures.html)
+    // Type / Quest Filter (gestures.html, sorceries.html)
     document.querySelectorAll('.type-filter-btn').forEach(btn => {
         btn.addEventListener('click', (e) => {
             document.querySelectorAll('.type-filter-btn').forEach(b => {
@@ -138,11 +138,17 @@ function getItemNG(item) {
 function isQuestItem(item) {
     if (item.isQuest !== undefined) return item.isQuest;
     if (item.type === 'quest') return true;
-    
-    // ตรวจจับจากคำอธิบายสถานที่/วิธีการรับ
     const loc = (item.location || '').toLowerCase();
     const npcList = ['Yoel', 'Yuria', 'Greirat', 'Siegward', 'Leonhard', 'Sirris', 'Heysel', 'Black Hand', 'Patches', 'Cornyx', 'Irina', 'Karla', 'Hawkwood'];
     return npcList.some(npc => loc.includes(npc.toLowerCase())) || loc.includes('quest') || loc.includes('npc');
+}
+
+function getSorceryType(item) {
+    if (item.type) return item.type;
+    const loc = (item.location || '').toLowerCase();
+    if (loc.includes('soul of') || loc.includes('แลกจาก') || loc.includes('ludleth')) return 'boss';
+    if (loc.includes('ซื้อ') || loc.includes('orbeck') || loc.includes('karla') || loc.includes('yuria')) return 'npc';
+    return 'loot';
 }
 
 function renderList() {
@@ -169,6 +175,12 @@ function renderList() {
             if (currentTypeFilter === 'general' && isQuest) return false;
         }
 
+        // Type Filter (sorceries.html)
+        if (trackerType === 'sorceries' && currentTypeFilter !== 'all') {
+            const sType = getSorceryType(item);
+            if (currentTypeFilter !== sType) return false;
+        }
+
         // Search Filter
         if (searchKeyword) {
             const matchName = item.name.toLowerCase().includes(searchKeyword);
@@ -187,7 +199,6 @@ function renderList() {
     container.innerHTML = filtered.map(item => {
         const checked = userProgress.includes(item.id);
         
-        // Badge Tag แสดงผล (NG สำหรับแหวน หรือ Quest/General สำหรับ Gesture)
         let tagHtml = '';
         if (trackerType === 'rings') {
             const ngTag = getItemNG(item);
@@ -197,6 +208,17 @@ function renderList() {
             tagHtml = isQuest 
                 ? `<span class="text-[10px] px-1.5 py-0.5 rounded border border-amber-500/40 text-amber-400 ml-1.5"><i class="fa-solid fa-scroll mr-1"></i>NPC Quest</span>`
                 : `<span class="text-[10px] px-1.5 py-0.5 rounded border border-gray-600 text-gray-400 ml-1.5">ทั่วไป</span>`;
+        } else if (trackerType === 'sorceries') {
+            const sType = getSorceryType(item);
+            if (sType === 'boss') {
+                tagHtml = `<span class="text-[10px] px-1.5 py-0.5 rounded border border-purple-500/40 text-purple-400 ml-1.5"><i class="fa-solid fa-skull mr-1"></i>Soul บอส</span>`;
+            } else if (sType === 'npc') {
+                tagHtml = `<span class="text-[10px] px-1.5 py-0.5 rounded border border-amber-500/40 text-amber-400 ml-1.5"><i class="fa-solid fa-user-tag mr-1"></i>NPC/เควส</span>`;
+            } else if (sType === 'covenant') {
+                tagHtml = `<span class="text-[10px] px-1.5 py-0.5 rounded border border-emerald-500/40 text-emerald-400 ml-1.5"><i class="fa-solid fa-shield-halved mr-1"></i>Covenant</span>`;
+            } else {
+                tagHtml = `<span class="text-[10px] px-1.5 py-0.5 rounded border border-blue-500/40 text-blue-400 ml-1.5"><i class="fa-solid fa-box-open mr-1"></i>เก็บตามฉาก</span>`;
+            }
         }
 
         return `
@@ -243,10 +265,11 @@ function updateUI() {
 }
 
 // Backup Export & Import
-function exportBackup() {
+export function exportBackup() {
     const backupData = {
         rings: JSON.parse(localStorage.getItem('ds3_rings') || '[]'),
         gestures: JSON.parse(localStorage.getItem('ds3_gestures') || '[]'),
+        sorceries: JSON.parse(localStorage.getItem('ds3_sorceries') || '[]'),
         exportedAt: new Date().toISOString()
     };
 
@@ -259,7 +282,7 @@ function exportBackup() {
     downloadAnchor.remove();
 }
 
-function importBackup(e) {
+export function importBackup(e) {
     const file = e.target.files[0];
     if (!file) return;
 
@@ -273,6 +296,9 @@ function importBackup(e) {
             if (imported.gestures && Array.isArray(imported.gestures)) {
                 localStorage.setItem('ds3_gestures', JSON.stringify(imported.gestures));
             }
+            if (imported.sorceries && Array.isArray(imported.sorceries)) {
+                localStorage.setItem('ds3_sorceries', JSON.stringify(imported.sorceries));
+            }
 
             userProgress = imported[trackerType] || [];
 
@@ -282,7 +308,8 @@ function importBackup(e) {
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         rings: imported.rings || [],
-                        gestures: imported.gestures || []
+                        gestures: imported.gestures || [],
+                        sorceries: imported.sorceries || []
                     })
                 });
             }
@@ -296,39 +323,4 @@ function importBackup(e) {
         }
     };
     reader.readAsText(file);
-}
-
-//  Sorcery
-function getSorceryType(item) {
-    if (item.type) return item.type; // 'npc', 'boss', 'loot'
-    const loc = (item.location || '').toLowerCase();
-    if (loc.includes('soul of') || loc.includes('แลกจาก') || loc.includes('ludleth')) return 'boss';
-    if (loc.includes('ซื้อ') || loc.includes('orbeck') || loc.includes('karla') || loc.includes('yuria')) return 'npc';
-    return 'loot';
-}
-
-if (trackerType === 'sorceries' && currentTypeFilter !== 'all') {
-    const sType = getSorceryType(item);
-    if (currentTypeFilter !== sType) return false;
-}
-
-else if (trackerType === 'sorceries') {
-    const sType = getSorceryType(item);
-    if (sType === 'boss') {
-        tagHtml = `<span class="text-[10px] px-1.5 py-0.5 rounded border border-purple-500/40 text-purple-400 ml-1.5"><i class="fa-solid fa-skull mr-1"></i>Soul บอส</span>`;
-    } else if (sType === 'npc') {
-        tagHtml = `<span class="text-[10px] px-1.5 py-0.5 rounded border border-amber-500/40 text-amber-400 ml-1.5"><i class="fa-solid fa-user-tag mr-1"></i>NPC/เควส</span>`;
-    } else {
-        tagHtml = `<span class="text-[10px] px-1.5 py-0.5 rounded border border-blue-500/40 text-blue-400 ml-1.5"><i class="fa-solid fa-box-open mr-1"></i>เก็บตามฉาก</span>`;
-    }
-}
-
-
-function exportBackup() {
-    const backupData = {
-        rings: JSON.parse(localStorage.getItem('ds3_rings') || '[]'),
-        gestures: JSON.parse(localStorage.getItem('ds3_gestures') || '[]'),
-        sorceries: JSON.parse(localStorage.getItem('ds3_sorceries') || '[]'),
-        exportedAt: new Date().toISOString()
-    };
 }
