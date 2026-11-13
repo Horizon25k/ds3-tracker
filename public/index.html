@@ -3,128 +3,56 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DARK SOULS III - Achievement Tracker</title>
+    <title>Dark Souls 3 - Trophy Tracker Hub</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;800&family=Inter:wght@400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script>
-        tailwind.config = { theme: { extend: { colors: { dsGold: '#d4af37', dsDarkBg: '#090a0f', dsCardBg: '#141722', dsBorder: '#2b3042', dsEmerald: '#10b981' }, fontFamily: { cinzel: ['Cinzel', 'serif'], sans: ['Inter', 'sans-serif'] }}}}
+        tailwind.config = { theme: { extend: { colors: { dsGold: '#d4af37', dsDarkBg: '#090a0f', dsCardBg: '#141722', dsBorder: '#2b3042' }, fontFamily: { cinzel: ['Cinzel', 'serif'], sans: ['Inter', 'sans-serif'] }}}}
     </script>
-    <style>body { background-color: #090a0f; } .gold-glow { box-shadow: 0 0 20px rgba(212, 175, 55, 0.2); }</style>
+    <style>body { background-color: #090a0f; } .gold-glow { box-shadow: 0 0 20px rgba(212, 175, 55, 0.3); }</style>
 </head>
-<body class="text-gray-200 font-sans min-h-screen flex flex-col">
-
-    <!-- Header & Navigation -->
-    <header class="border-b border-dsBorder bg-[#11131c] sticky top-0 z-30 shadow-2xl px-4 py-3 flex justify-between items-center">
-        <div class="flex items-center gap-3">
-            <a href="index.html" class="w-10 h-10 rounded bg-dsCardBg border border-dsGold/40 flex items-center justify-center text-dsGold font-bold font-cinzel text-xl">
-                DS3
-            </a>
-            <div>
-                <h1 class="font-cinzel text-lg font-bold text-dsGold">DARK SOULS III</h1>
-                <p class="text-[10px] text-gray-400">Trophy & Achievement Tracker</p>
-            </div>
-        </div>
-        <button id="menuBtn" class="text-dsGold text-2xl px-3 py-1 hover:text-white transition focus:outline-none">
-            <i class="fa-solid fa-bars"></i>
-        </button>
-    </header>
-
-    <!-- Sidebar Right Drawer -->
-    <div id="drawerMenu" class="fixed inset-y-0 right-0 w-72 bg-[#0d0f17] border-l border-dsGold/40 transform translate-x-full transition-transform duration-300 z-50 shadow-[0_0_30px_rgba(0,0,0,0.8)] flex flex-col">
-        <div class="p-4 border-b border-dsBorder flex justify-between items-center bg-[#141722]">
-            <span class="font-cinzel text-dsGold font-bold text-lg"><i class="fa-solid fa-compass mr-2"></i> MENU</span>
-            <button id="closeMenuBtn" class="text-gray-400 hover:text-white text-2xl"><i class="fa-solid fa-xmark"></i></button>
-        </div>
-        
-        <div class="flex-1 overflow-y-auto p-4 flex flex-col gap-3">
-            <div class="space-y-2">
-                <a href="index.html" class="flex items-center gap-3 p-3 rounded-lg bg-dsGold/10 border border-dsGold/30 text-dsGold transition"><i class="fa-solid fa-house w-5"></i> หน้าแรก (Home)</a>
-                <a href="rings.html" class="flex items-center gap-3 p-3 rounded-lg text-gray-300 hover:bg-dsCardBg hover:text-dsGold transition"><i class="fa-solid fa-ring w-5"></i> Rings Tracker</a>
-                <a href="gestures.html" class="flex items-center gap-3 p-3 rounded-lg text-gray-300 hover:bg-dsCardBg hover:text-dsGold transition"><i class="fa-solid fa-person-praying w-5"></i> Gestures Tracker</a>
-                <a href="sorceries.html" class="flex items-center gap-3 p-3 rounded-lg text-gray-300 hover:bg-dsCardBg hover:text-dsGold transition"><i class="fa-solid fa-hat-wizard w-5"></i> Sorceries Tracker</a>
-            </div>
-            <hr class="border-dsBorder my-2">
-            <div id="authZone" class="min-h-[60px] flex items-center justify-center"></div>
-            <hr class="border-dsBorder my-2">
-            <button id="exportBtn" class="flex items-center gap-3 p-3 rounded-lg text-gray-300 hover:bg-dsCardBg hover:text-white transition"><i class="fa-solid fa-download w-5 text-dsGold"></i> Export Backup</button>
-            <label class="flex items-center gap-3 p-3 rounded-lg text-gray-300 hover:bg-dsCardBg hover:text-white transition cursor-pointer">
-                <i class="fa-solid fa-upload w-5 text-dsGold"></i> Import Backup
-                <input type="file" id="importInput" accept=".json" class="hidden">
-            </label>
-        </div>
+<body class="text-gray-200 font-sans min-h-screen flex flex-col items-center justify-center p-6 bg-[url('https://www.transparenttextures.com/patterns/stardust.png')]">
+    
+    <!-- Title Header -->
+    <div class="text-center mb-10">
+        <i class="fa-solid fa-fire-flame-curved text-6xl text-dsGold mb-4 drop-shadow-[0_0_15px_rgba(212,175,55,0.6)]"></i>
+        <h1 class="font-cinzel text-4xl md:text-5xl font-bold text-dsGold tracking-widest mb-2">DARK SOULS III</h1>
+        <p class="text-gray-400 uppercase tracking-widest text-sm">Ultimate Trophy Tracker</p>
     </div>
-    <div id="drawerOverlay" class="fixed inset-0 bg-black/60 hidden z-40 backdrop-blur-sm transition-opacity"></div>
 
-    <!-- Main Content Grid -->
-    <main class="max-w-7xl mx-auto px-4 py-8 flex-1 w-full">
-        <div class="text-center mb-8">
-            <h2 class="font-cinzel text-3xl md:text-4xl font-extrabold text-dsGold tracking-wide mb-2">TROPHY TRACKERS</h2>
-            <p class="text-sm text-gray-400">เลือกหมวดหมู่ที่ต้องการติดตามสถานะเพื่อความสำเร็จระดับ Platinum Trophy</p>
-        </div>
+    <!-- Cards Grid (4 หมวดหมู่) -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 w-full max-w-6xl">
+        <!-- Master of Rings -->
+        <a href="rings.html" class="flex flex-col items-center justify-center p-6 rounded-2xl bg-dsCardBg border-2 border-dsBorder hover:border-dsGold hover:bg-[#1a1e2d] transition-all duration-300 group gold-glow">
+            <i class="fa-solid fa-ring text-4xl text-dsGold mb-3 group-hover:scale-110 transition-transform"></i>
+            <h2 class="font-cinzel text-lg font-bold text-white group-hover:text-dsGold text-center">Master of Rings</h2>
+        </a>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <!-- Rings Card -->
-            <a href="rings.html" class="bg-dsCardBg border border-dsGold/30 hover:border-dsGold p-6 rounded-xl gold-glow transition duration-300 group flex flex-col justify-between">
-                <div>
-                    <div class="flex items-center justify-between mb-4">
-                        <i class="fa-solid fa-ring text-4xl text-dsGold group-hover:scale-110 transition duration-300"></i>
-                        <span class="text-xs px-2.5 py-1 rounded bg-dsGold/10 text-dsGold border border-dsGold/30">107 Items</span>
-                    </div>
-                    <h3 class="font-cinzel text-xl font-bold text-white group-hover:text-dsGold transition">MASTER OF RINGS</h3>
-                    <p class="text-xs text-gray-400 mt-2">สะสมแหวนทั้งหมด 107 วงจากรอบ NG, NG+ และ NG++ เพื่อรับความสำเร็จ Master of Rings</p>
-                </div>
-                <div class="mt-6 pt-4 border-t border-dsBorder/60 flex justify-between items-center text-xs font-bold text-dsGold">
-                    <span>เปิด Tracker</span>
-                    <i class="fa-solid fa-arrow-right group-hover:translate-x-1 transition"></i>
-                </div>
-            </a>
+        <!-- Master of Gestures -->
+        <a href="gestures.html" class="flex flex-col items-center justify-center p-6 rounded-2xl bg-dsCardBg border-2 border-dsBorder hover:border-dsGold hover:bg-[#1a1e2d] transition-all duration-300 group gold-glow">
+            <i class="fa-solid fa-person-praying text-4xl text-dsGold mb-3 group-hover:scale-110 transition-transform"></i>
+            <h2 class="font-cinzel text-lg font-bold text-white group-hover:text-dsGold text-center">Master of Gestures</h2>
+        </a>
 
-            <!-- Gestures Card -->
-            <a href="gestures.html" class="bg-dsCardBg border border-dsGold/30 hover:border-dsGold p-6 rounded-xl gold-glow transition duration-300 group flex flex-col justify-between">
-                <div>
-                    <div class="flex items-center justify-between mb-4">
-                        <i class="fa-solid fa-person-praying text-4xl text-dsGold group-hover:scale-110 transition duration-300"></i>
-                        <span class="text-xs px-2.5 py-1 rounded bg-dsGold/10 text-dsGold border border-dsGold/30">33 Items</span>
-                    </div>
-                    <h3 class="font-cinzel text-xl font-bold text-white group-hover:text-dsGold transition">MASTER OF GESTURES</h3>
-                    <p class="text-xs text-gray-400 mt-2">ปลดล็อกท่าทางแสดงอารมณ์ทั้งหมด 33 ท่าทาง ทั้งจากตัวละครเริ่มต้น และเควส NPC ต่างๆ</p>
-                </div>
-                <div class="mt-6 pt-4 border-t border-dsBorder/60 flex justify-between items-center text-xs font-bold text-dsGold">
-                    <span>เปิด Tracker</span>
-                    <i class="fa-solid fa-arrow-right group-hover:translate-x-1 transition"></i>
-                </div>
-            </a>
+        <!-- Master of Sorceries -->
+        <a href="sorceries.html" class="flex flex-col items-center justify-center p-6 rounded-2xl bg-dsCardBg border-2 border-dsBorder hover:border-dsGold hover:bg-[#1a1e2d] transition-all duration-300 group gold-glow">
+            <i class="fa-solid fa-hat-wizard text-4xl text-dsGold mb-3 group-hover:scale-110 transition-transform"></i>
+            <h2 class="font-cinzel text-lg font-bold text-white group-hover:text-dsGold text-center">Master of Sorceries</h2>
+        </a>
 
-            <!-- Sorceries Card -->
-            <a href="sorceries.html" class="bg-dsCardBg border border-dsGold/30 hover:border-dsGold p-6 rounded-xl gold-glow transition duration-300 group flex flex-col justify-between">
-                <div>
-                    <div class="flex items-center justify-between mb-4">
-                        <i class="fa-solid fa-hat-wizard text-4xl text-dsGold group-hover:scale-110 transition duration-300"></i>
-                        <span class="text-xs px-2.5 py-1 rounded bg-dsGold/10 text-dsGold border border-dsGold/30">34 Items</span>
-                    </div>
-                    <h3 class="font-cinzel text-xl font-bold text-white group-hover:text-dsGold transition">MASTER OF SORCERIES</h3>
-                    <p class="text-xs text-gray-400 mt-2">สะสมบทเวทมนตร์ Sorcery ทั้งหมด 34 บท จากการซื้อ NPC, มอบ Scroll, Soul บอส และ Covenant</p>
-                </div>
-                <div class="mt-6 pt-4 border-t border-dsBorder/60 flex justify-between items-center text-xs font-bold text-dsGold">
-                    <span>เปิด Tracker</span>
-                    <i class="fa-solid fa-arrow-right group-hover:translate-x-1 transition"></i>
-                </div>
-            </a>
-        </div>
-    </main>
+        <!-- Master of Pyromancies -->
+        <a href="pyromancies.html" class="flex flex-col items-center justify-center p-6 rounded-2xl bg-dsCardBg border-2 border-dsBorder hover:border-dsGold hover:bg-[#1a1e2d] transition-all duration-300 group gold-glow">
+            <i class="fa-solid fa-fire text-4xl text-dsGold mb-3 group-hover:scale-110 transition-transform"></i>
+            <h2 class="font-cinzel text-lg font-bold text-white group-hover:text-dsGold text-center">Master of Pyromancies</h2>
+        </a>
+    </div>
 
-    <script type="module">
-        import { initUI } from './js/ui.js';
-        import { initAuth } from './js/auth.js';
-        import { exportBackup, importBackup } from './js/tracker.js';
-
-        document.addEventListener('DOMContentLoaded', async () => {
-            initUI();
-            await initAuth();
-            document.getElementById('exportBtn')?.addEventListener('click', exportBackup);
-            document.getElementById('importInput')?.addEventListener('change', importBackup);
-        });
-    </script>
+    <!-- Footer Link -->
+    <footer class="mt-12 text-center">
+        <a href="https://github.com/Horizon25k/ds3-tracker" target="_blank" class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-dsCardBg border border-dsGold/40 text-dsGold hover:bg-dsGold hover:text-black font-cinzel font-bold text-xs transition">
+            <i class="fa-brands fa-github text-base"></i> VIEW ON GITHUB
+        </a>
+    </footer>
 </body>
 </html>
