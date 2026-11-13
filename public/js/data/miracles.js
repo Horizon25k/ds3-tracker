@@ -37,7 +37,7 @@ export const MIRACLES_DATA = [
     { id: 'm35', cat: 'miracles', name: 'Vow of Silence', type: 'npc', location: 'ซื้อได้จาก Karla (มอบ Londor Braille Divine Tome - ราคา 15,000 Souls)' },
 
     // ============================================
-    // --- DLC Expansion: Ashes of Ariandel & The Ringed City ---
+    // --- DLC Expansion: Ashes of Ariandel & The Ringed City --->
     // ============================================
     { id: 'm36', cat: 'miracles', name: 'Lightning Arrow', type: 'loot', location: 'DLC: เก็บในห้องลับหลังกำแพงลวงตา (The Ringed City)' },
     { id: 'm37', cat: 'miracles', name: 'Way of White Corona', type: 'loot', location: 'DLC: เก็บในโบสถ์ร้าง Corvian Settlement (Painted World of Ariandel)' },

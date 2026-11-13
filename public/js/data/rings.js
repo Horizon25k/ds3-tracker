@@ -111,7 +111,7 @@ export const RINGS_DATA = [
     { id: 'r106', cat: 'rings', name: 'Wolf Ring +2', tier: 'NG++', location: 'NG++: Cemetery of Ash หลังลานบอส Iudex Gundyr', effect: 'Poise +20' },
     { id: 'r107', cat: 'rings', name: 'Ring of Evil Eye +2', tier: 'NG++', location: 'NG++: High Wall of Lothric ห้องคุก', effect: 'Restore HP +35 on kill' },
 
-    // --- DLC Expansion Rings (id: r110 - r118) ---
+    // --- DLC Expansion Rings (id: r110 - r118) --->
     { id: 'r110', cat: 'rings', name: 'Chillbite Ring', tier: 'NG', location: 'DLC: ได้จาก Friede ใน Painted World of Ariandel', effect: 'ต้านทานความเย็น (Frostbite Resistance) +140' },
     { id: 'r111', cat: 'rings', name: 'Ring of Evil Eye +3', tier: 'NG', location: 'DLC: เก็บใน The Dreg Heap', effect: 'ฟื้นฟู HP +37 เมื่อสังหารศัตรู' },
     { id: 'r112', cat: 'rings', name: 'Covetous Gold Serpent Ring +3', tier: 'NG', location: 'DLC: เก็บในห้องขังของ Lapp (The Ringed City)', effect: 'เพิ่มอัตราการดรอปไอเทม +115' },

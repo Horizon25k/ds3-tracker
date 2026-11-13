@@ -31,4 +31,5 @@ export async function initAuth() {
             resolve(null);
         }
     });
+    
 }

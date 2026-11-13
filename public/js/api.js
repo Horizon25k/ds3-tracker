@@ -23,4 +23,5 @@ export async function saveProgress(data) {
             });
         } catch (e) { console.error("DB Save failed", e); }
     }
+    
 }

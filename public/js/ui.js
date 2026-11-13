@@ -1,4 +1,5 @@
 export function initUI() {
+    
     const menuBtn = document.getElementById('menuBtn');
     const closeMenuBtn = document.getElementById('closeMenuBtn');
     const drawerMenu = document.getElementById('drawerMenu');

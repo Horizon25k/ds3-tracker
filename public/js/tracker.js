@@ -66,7 +66,6 @@ function bindEvents() {
         renderList();
     });
 
-    // Helper สลับสไตล์ปุ่ม Filter โดยไม่กระทบโครงสร้างปุ่ม
     const updateActiveButton = (buttons, selectedBtn, activeClasses) => {
         buttons.forEach(b => {
             b.classList.remove(
@@ -81,7 +80,6 @@ function bindEvents() {
         selectedBtn.classList.add(...activeClasses);
     };
 
-    // Status Filter (ทั้งหมด / เก็บแล้ว / ยังไม่ได้)
     document.querySelectorAll('.filter-btn').forEach(btn => {
         btn.addEventListener('click', (e) => {
             updateActiveButton(
@@ -94,7 +92,6 @@ function bindEvents() {
         });
     });
 
-    // NG Filter (หน้า rings.html)
     document.querySelectorAll('.ng-filter-btn').forEach(btn => {
         btn.addEventListener('click', (e) => {
             const target = e.currentTarget;
@@ -109,7 +106,7 @@ function bindEvents() {
             );
 
             currentNgFilter = target.dataset.ng;
-            currentTypeFilter = 'all'; // รีเซ็ต type filter
+            currentTypeFilter = 'all'; 
             renderList();
         });
     });
@@ -129,7 +126,7 @@ function bindEvents() {
             );
 
             currentTypeFilter = target.dataset.type;
-            currentNgFilter = 'all'; // รีเซ็ต NG filter
+            currentNgFilter = 'all'; 
             renderList();
         });
     });
@@ -202,7 +199,6 @@ function renderList() {
     const container = document.getElementById('listContainer');
     if (!container) return;
 
-    // ล็อกความสูงขั้นต่ำป้องกันหน้าจอยุบเด้งเวลาจำนวนไอเทมลดลง
     container.style.minHeight = '350px';
 
     const filtered = itemsData.filter(item => {

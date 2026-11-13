@@ -33,7 +33,7 @@ export const SORCERIES_DATA = [
     { id: 's32', cat: 'sorceries', name: 'Deep Soul', type: 'boss', location: 'แลกจาก Soul of the Deacons of the Deep (กับ Ludleth)' },
     { id: 's33', cat: 'sorceries', name: 'White Dragon Breath', type: 'boss', location: 'แลกจาก Soul of Consumed Oceiros (กับ Ludleth)' },
     { id: 's34', cat: 'sorceries', name: 'Great Deep Soul', type: 'covenant', location: 'รางวัล Rank 1 จาก Covenant: Aldrich Faithful (ใช้ Human Dregs 10 ชิ้น)' },
-    // --- DLC Expansion Sorceries (id: s35 - s38) ---
+    // --- DLC Expansion Sorceries (id: s35 - s38) --->
     { id: 's35', cat: 'sorceries', name: 'Frozen Weapon', type: 'loot', location: 'DLC: เก็บในหุบเขาแมลงวัน (Painted World of Ariandel)' },
     { id: 's36', cat: 'sorceries', name: 'Snap Freeze', type: 'loot', location: 'DLC: เก็บใน Depths of the Painting ริมซ้ายของพื้นที่ (Painted World of Ariandel)' },
     { id: 's37', cat: 'sorceries', name: 'Great Soul Dregs', type: 'loot', location: 'DLC: เก็บในห้องลับลวงตา (The Dreg Heap)' },

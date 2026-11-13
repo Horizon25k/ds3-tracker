@@ -1,4 +1,4 @@
-export const GESTURES_DATA = [
+export const GESTURES_DATA = [ 
     { id: 'g1', cat: 'gestures', name: 'Point Forward', location: 'เริ่มเกม', effect: 'มีให้ตั้งแต่เริ่มเกม' },
     { id: 'g2', cat: 'gestures', name: 'Point Up', location: 'เริ่มเกม', effect: 'มีให้ตั้งแต่เริ่มเกม' },
     { id: 'g3', cat: 'gestures', name: 'Point Down', location: 'เริ่มเกม', effect: 'มีให้ตั้งแต่เริ่มเกม' },

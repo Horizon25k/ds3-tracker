@@ -27,7 +27,7 @@ export const PYROMANCIES_DATA = [
     { id: 'p26', cat: 'pyromancies', name: 'Black Serpent', type: 'boss', location: 'แลกจาก Soul of High Lord Wolnir (กับ Ludleth of Courland)' },
     { id: 'p27', cat: 'pyromancies', name: 'Demon Beacon', type: 'boss', location: 'แลกจาก Soul of the Demon Prince (กับ Ludleth of Courland)' },
 
-    // --- DLC Expansion Pyromancies (id: p28 - p30) ---
+    // --- DLC Expansion Pyromancies (id: p28 - p30) --->
     { id: 'p28', cat: 'pyromancies', name: 'Floating Chaos', type: 'loot', location: 'DLC: ดรอปจาก Livid Pyromancer Dunnel (Painted World of Ariandel)' },
     { id: 'p29', cat: 'pyromancies', name: 'Flame Fan', type: 'loot', location: 'DLC: ดรอปจาก Desert Pyromancer Zoey (The Ringed City)' },
     { id: 'p30', cat: 'pyromancies', name: 'Seething Chaos', type: 'boss', location: 'DLC: แลกจาก Soul of the Demon Prince (กับ Ludleth of Courland)' }
