@@ -1,5 +1,6 @@
 let currentStatusFilter = 'all';
 let currentNgFilter = 'all';
+let currentTypeFilter = 'all';
 let searchKeyword = '';
 let itemsData = [];
 let userProgress = [];
@@ -74,7 +75,7 @@ function bindEvents() {
         });
     });
 
-    // NG Filter
+    // NG Filter (rings.html)
     document.querySelectorAll('.ng-filter-btn').forEach(btn => {
         btn.addEventListener('click', (e) => {
             document.querySelectorAll('.ng-filter-btn').forEach(b => {
@@ -85,6 +86,21 @@ function bindEvents() {
             target.classList.add('bg-dsGold/20', 'text-dsGold', 'border-dsGold/40', 'font-bold');
             target.classList.remove('text-gray-400', 'bg-dsDarkBg');
             currentNgFilter = target.dataset.ng;
+            renderList();
+        });
+    });
+
+    // Type / Quest Filter (gestures.html)
+    document.querySelectorAll('.type-filter-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            document.querySelectorAll('.type-filter-btn').forEach(b => {
+                b.classList.remove('bg-dsGold/20', 'text-dsGold', 'border-dsGold/40', 'font-bold');
+                b.classList.add('text-gray-400', 'bg-dsDarkBg');
+            });
+            const target = e.currentTarget;
+            target.classList.add('bg-dsGold/20', 'text-dsGold', 'border-dsGold/40', 'font-bold');
+            target.classList.remove('text-gray-400', 'bg-dsDarkBg');
+            currentTypeFilter = target.dataset.type;
             renderList();
         });
     });
@@ -113,6 +129,16 @@ function getItemNG(item) {
     return 'NG';
 }
 
+function isQuestItem(item) {
+    if (item.isQuest !== undefined) return item.isQuest;
+    if (item.type === 'quest') return true;
+    
+    // ตรวจจับจากคำอธิบายสถานที่/วิธีการรับ
+    const loc = (item.location || '').toLowerCase();
+    const npcList = ['Yoel', 'Yuria', 'Greirat', 'Siegward', 'Leonhard', 'Sirris', 'Heysel', 'Black Hand', 'Patches', 'Cornyx', 'Irina', 'Karla', 'Hawkwood'];
+    return npcList.some(npc => loc.includes(npc.toLowerCase())) || loc.includes('quest') || loc.includes('npc');
+}
+
 function renderList() {
     const container = document.getElementById('listContainer');
     if (!container) return;
@@ -124,10 +150,17 @@ function renderList() {
         if (currentStatusFilter === 'obtained' && !isObtained) return false;
         if (currentStatusFilter === 'remaining' && isObtained) return false;
 
-        // NG Filter
-        if (currentNgFilter !== 'all') {
+        // NG Filter (rings.html)
+        if (trackerType === 'rings' && currentNgFilter !== 'all') {
             const itemNg = getItemNG(item);
             if (itemNg !== currentNgFilter) return false;
+        }
+
+        // Type / Quest Filter (gestures.html)
+        if (trackerType === 'gestures' && currentTypeFilter !== 'all') {
+            const isQuest = isQuestItem(item);
+            if (currentTypeFilter === 'quest' && !isQuest) return false;
+            if (currentTypeFilter === 'general' && isQuest) return false;
         }
 
         // Search Filter
@@ -147,8 +180,19 @@ function renderList() {
 
     container.innerHTML = filtered.map(item => {
         const checked = userProgress.includes(item.id);
-        const ngTag = getItemNG(item);
         
+        // Badge Tag แสดงผล (NG สำหรับแหวน หรือ Quest/General สำหรับ Gesture)
+        let tagHtml = '';
+        if (trackerType === 'rings') {
+            const ngTag = getItemNG(item);
+            tagHtml = `<span class="text-[10px] px-1.5 py-0.5 rounded border border-dsGold/40 text-dsGold ml-1.5">${ngTag}</span>`;
+        } else if (trackerType === 'gestures') {
+            const isQuest = isQuestItem(item);
+            tagHtml = isQuest 
+                ? `<span class="text-[10px] px-1.5 py-0.5 rounded border border-amber-500/40 text-amber-400 ml-1.5"><i class="fa-solid fa-scroll mr-1"></i>NPC Quest</span>`
+                : `<span class="text-[10px] px-1.5 py-0.5 rounded border border-gray-600 text-gray-400 ml-1.5">ทั่วไป</span>`;
+        }
+
         return `
             <div class="bg-dsCardBg border ${checked ? 'border-dsEmerald/50' : 'border-dsBorder'} p-3.5 rounded-lg flex items-center justify-between transition hover:border-dsGold/40">
                 <div class="flex items-center gap-3.5">
@@ -156,7 +200,7 @@ function renderList() {
                     <div>
                         <div class="font-bold text-sm ${checked ? 'text-dsEmerald line-through' : 'text-gray-200'}">
                             ${item.name} 
-                            <span class="text-[10px] px-1.5 py-0.5 rounded border border-dsGold/40 text-dsGold ml-1.5">${ngTag}</span>
+                            ${tagHtml}
                         </div>
                         <div class="text-xs text-gray-400 mt-0.5">${item.location || 'ไม่มีระบุสถานที่'}</div>
                     </div>
@@ -242,4 +286,9 @@ function importBackup(e) {
         }
     };
     reader.readAsText(file);
+   
+}
+export function setTrackerUser(user) {
+    currentUser = user;
+    loadProgress();
 }

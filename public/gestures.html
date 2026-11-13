@@ -30,7 +30,7 @@
         </button>
     </header>
 
-    <!-- Sidebar Right Drawer (Same as rings.html but active state changed) -->
+    <!-- Sidebar Right Drawer -->
     <div id="drawerMenu" class="fixed inset-y-0 right-0 w-72 bg-[#0d0f17] border-l border-dsGold/40 transform translate-x-full transition-transform duration-300 z-50 shadow-[0_0_30px_rgba(0,0,0,0.8)] flex flex-col">
         <div class="p-4 border-b border-dsBorder flex justify-between items-center bg-[#141722]">
             <span class="font-cinzel text-dsGold font-bold text-lg"><i class="fa-solid fa-compass mr-2"></i> MENU</span>
@@ -65,16 +65,28 @@
             </div>
             <div class="w-full bg-gray-900 rounded-full h-2.5 mb-4 border border-gray-700/60"><div id="progressBar" class="bg-gradient-to-r from-amber-600 to-dsGold h-full transition-all duration-300" style="width: 0%"></div></div>
             
-            <div class="relative w-full mb-3">
+            <div class="relative w-full mb-4">
                 <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-3.5 text-dsGold"></i>
                 <input type="text" id="searchInput" placeholder="ค้นหาท่าทาง..." class="w-full bg-dsDarkBg border-2 border-dsGold/60 rounded-lg pl-10 pr-4 py-2.5 text-sm text-white focus:outline-none focus:border-dsGold shadow-inner">
             </div>
 
-            <!-- Filters -->
-            <div class="flex flex-wrap gap-2 text-xs font-semibold">
-                <button data-status="all" class="filter-btn px-3 py-1.5 rounded-md bg-dsGold text-black">ทั้งหมด</button>
-                <button data-status="obtained" class="filter-btn px-3 py-1.5 rounded-md text-gray-400 hover:text-white bg-dsDarkBg border border-dsBorder">เก็บแล้ว</button>
-                <button data-status="remaining" class="filter-btn px-3 py-1.5 rounded-md text-gray-400 hover:text-white bg-dsDarkBg border border-dsBorder">ยังไม่ได้</button>
+            <!-- Filters Zone -->
+            <div class="flex flex-col gap-3 text-xs font-semibold">
+                <!-- Status Filter -->
+                <div class="flex flex-wrap gap-2 items-center">
+                    <span class="text-gray-400 mr-1">สถานะ:</span>
+                    <button data-status="all" class="filter-btn px-3 py-1.5 rounded-md bg-dsGold text-black font-bold">ทั้งหมด</button>
+                    <button data-status="obtained" class="filter-btn px-3 py-1.5 rounded-md text-gray-400 hover:text-white bg-dsDarkBg border border-dsBorder">เก็บแล้ว</button>
+                    <button data-status="remaining" class="filter-btn px-3 py-1.5 rounded-md text-gray-400 hover:text-white bg-dsDarkBg border border-dsBorder">ยังไม่ได้</button>
+                </div>
+
+                <!-- Quest Filter -->
+                <div class="flex flex-wrap gap-2 items-center pt-2 border-t border-dsBorder/40">
+                    <span class="text-gray-400 mr-1">ที่มา/ประเภท:</span>
+                    <button data-type="all" class="type-filter-btn px-3 py-1.5 rounded-md bg-dsGold/20 text-dsGold border border-dsGold/40 font-bold">ทั้งหมด</button>
+                    <button data-type="quest" class="type-filter-btn px-3 py-1.5 rounded-md text-gray-400 hover:text-white bg-dsDarkBg border border-dsBorder">จากเควส NPC</button>
+                    <button data-type="general" class="type-filter-btn px-3 py-1.5 rounded-md text-gray-400 hover:text-white bg-dsDarkBg border border-dsBorder">ทั่วไป/เริ่มต้น</button>
+                </div>
             </div>
         </div>
         <div id="listContainer" class="space-y-3"></div>
