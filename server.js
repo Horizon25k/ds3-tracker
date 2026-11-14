@@ -16,16 +16,23 @@ app.use(express.static(path.join(__dirname, "public")));
 app.get("/api/progress/:userId", async (req, res) => {
   try {
     const { userId } = req.params;
+
+    if (!userId || userId === 'null' || userId === 'undefined' || userId === 'my_ds3_user') {
+      return res.json({ gestures: [], rings: [], sorceries: [], pyromancies: [], miracles: [] });
+    }
+
     const result = await pool.query(
       "SELECT gestures, rings, sorceries, pyromancies, miracles FROM user_progress WHERE user_id = $1",
       [userId]
     );
+
     if (result.rows.length > 0) {
       res.json(result.rows[0]);
     } else {
       res.json({ gestures: [], rings: [], sorceries: [], pyromancies: [], miracles: [] });
     }
   } catch (err) {
+    console.error("Database Fetch Error:", err);
     res.status(500).json({ error: "Database error" });
   }
 });
@@ -33,6 +40,11 @@ app.get("/api/progress/:userId", async (req, res) => {
 app.post("/api/progress/:userId", async (req, res) => {
   try {
     const { userId } = req.params;
+
+    if (!userId || userId === 'null' || userId === 'undefined' || userId === 'my_ds3_user') {
+      return res.status(401).json({ error: "Unauthorized: ต้องเข้าสู่ระบบก่อนจึงจะเก็บบันทึกประวัติได้" });
+    }
+
     const { gestures, rings, sorceries, pyromancies, miracles } = req.body;
 
     const existing = await pool.query(
@@ -68,8 +80,10 @@ app.post("/api/progress/:userId", async (req, res) => {
         JSON.stringify(finalMiracles)
       ]
     );
+
     res.json({ success: true });
   } catch (err) {
+    console.error("Save Progress Error:", err);
     res.status(500).json({ error: "Save failed" });
   }
 });
@@ -84,6 +98,5 @@ app.get("/api/config", (req, res) => {
     appId: process.env.appId,
   });
 });
-
 
 app.listen(port, () => console.log(`Server running on port ${port}`));
